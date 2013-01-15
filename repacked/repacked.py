@@ -57,9 +57,9 @@ def build_packages(spec, output, follow):
     """
 
     # Prefer settings from packagespec file
-    if spec['pkgbuild']['follow-symlinks']:
+    try:
         symlinks = spec['pkgbuild']['follow-symlinks']
-    else:
+    except KeyError:
     	symlinks = follow
     
 
@@ -99,7 +99,7 @@ def main():
                                    prog="repacked.py", version=__version__, usage="%prog specfile [options]")
     parser.add_option('--outputdir', '-o', default='.', help="packages will be placed in the specified directory")
     parser.add_option('--no-clean', '-C', action="store_true", help="Don't remove temporary files used to build packages")
-    parser.add_option('--follow', '-f', action="store_true", help="Follow Symlinks, default setting is to copy them as they are.")
+    parser.add_option('--follow', '-f', default=False, action="store_true", help="Follow Symlinks, default setting is to copy them as they are.")
 
     options, arguments = parser.parse_args()
 
