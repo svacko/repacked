@@ -20,6 +20,7 @@ class DebianPackager(IPlugin):
         self.spec = {}
         self.package = {}
         self.output_dir = ""
+        self.follow=False
     
     def checkarch(self, architecture):
         if architecture == "32-bit":
@@ -45,16 +46,17 @@ class DebianPackager(IPlugin):
 
         return filename
     
-    def tree(self, spec, package, output):
+    def tree(self, spec, package, output, follow):
         """
         Builds a debian package tree
         """
         
         self.spec = spec
         self.package = package
-        self.output = output
-        
-        ## Create directories
+        self.output_dir = output
+        self.follow=follow
+
+	## Create directories
 
         # Create the temporary folder
         tmpdir = tempfile.mkdtemp()
@@ -63,7 +65,7 @@ class DebianPackager(IPlugin):
         os.mkdir(os.path.join(tmpdir, "DEBIAN"))
 
         # Copy across the contents of the file tree
-        distutils.dir_util.copy_tree(spec['packagetree'], tmpdir)
+        distutils.dir_util.copy_tree(spec['packagetree'], tmpdir, preserve_symlinks=self.follow)
 
         print("Debian package tree created in {0}".format(tmpdir))
 
@@ -143,4 +145,5 @@ class DebianPackager(IPlugin):
         """
 
         filename = os.path.join(self.output_dir, filename)
+        print ("fakeroot dpkg-deb --build {0} {1}".format(directory, filename))
         os.system("fakeroot dpkg-deb --build {0} {1}".format(directory, filename))

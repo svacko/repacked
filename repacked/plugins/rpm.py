@@ -22,6 +22,7 @@ class RPMPackager(IPlugin):
         self.package = {}
         self.output_dir = ""
         self.tmpdir = ""
+        self.follow=False
     
     def checkarch(self, architecture):
         if architecture == "32-bit":
@@ -47,7 +48,7 @@ class RPMPackager(IPlugin):
 
         return filename
     
-    def tree(self, spec, package, output):
+    def tree(self, spec, package, output, follow):
         """
         Builds a debian package tree
         """
@@ -55,6 +56,7 @@ class RPMPackager(IPlugin):
         self.spec = spec
         self.package = package
         self.output_dir = output
+        self.follow=follow
 
         ## Create directories
 
@@ -66,7 +68,7 @@ class RPMPackager(IPlugin):
         os.mkdir(program_files)
 
         # Copy across the contents of the file tree
-        distutils.dir_util.copy_tree(spec['packagetree'], program_files)
+        distutils.dir_util.copy_tree(spec['packagetree'], tmpdir, preserve_symlinks=self.follow)
 
         print("RPM package tree created in {0}".format(tmpdir))
 

@@ -8,12 +8,12 @@ from __future__ import print_function
 from pkg_resources import resource_string
 from yapsy.PluginManager import PluginManager
 
-__author__ = "Jonathan Prior"
+__author__ = "Jonathan Prior and fixes by Adam Hamsik"
 __copyright__ = "Copyright 2011, 736 Computing Services Limited"
 __license__ = "LGPL"
-__version__ = "101"
-__maintainer__ = "Jonathan Prior"
-__email__ = "jjprior@736cs.com"
+__version__ = "103"
+__maintainer__ = "Adam Hamsik"
+__email__ = "adam.hamsik@chillisys.com"
 
 import optparse
 import yaml
@@ -50,11 +50,18 @@ def parse_spec(filename):
 
     return spec
 
-def build_packages(spec, output):
+def build_packages(spec, output, follow):
     """
     Loops through package specs and call the package
     builders one by one
     """
+
+    # Prefer settings from packagespec file
+    if spec['pkgbuild']['follow-symlinks']:
+        symlinks = spec['pkgbuild']['follow-symlinks']
+    else:
+    	symlinks = follow
+    
 
     packages = spec['packages']
     tempdirs = []
@@ -70,7 +77,7 @@ def build_packages(spec, output):
             print("Module {0} isn't installed. Ignoring this package and continuing.".format(package['package']))
         
         if builder:
-            directory = builder.plugin_object.tree(spec, package, output)
+            directory = builder.plugin_object.tree(spec, package, output, symlinks)
             builder.plugin_object.build(directory, builder.plugin_object.filenamegen(package))
             tempdirs.append(directory)
         
@@ -91,7 +98,9 @@ def main():
     parser = optparse.OptionParser(description="Creates deb and RPM packages from files defined in a package specification.",
                                    prog="repacked.py", version=__version__, usage="%prog specfile [options]")
     parser.add_option('--outputdir', '-o', default='.', help="packages will be placed in the specified directory")
-    parser.add_option('--no-clean', action="store_true", help="Don't remove temporary files used to build packages")
+    parser.add_option('--no-clean', '-C', action="store_true", help="Don't remove temporary files used to build packages")
+    parser.add_option('--follow', '-f', action="store_true", help="Follow Symlinks, default setting is to copy them as they are.")
+
     options, arguments = parser.parse_args()
 
     # Parse the specification
@@ -111,7 +120,7 @@ def main():
     
     # Create build trees based on the spec
     print("Building packages...")
-    tempdirs = build_packages(spec, options.outputdir)
+    tempdirs = build_packages(spec, options.outputdir, options.follow)
 
     # Clean up old build trees
     if not options.no_clean:
