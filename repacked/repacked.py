@@ -50,7 +50,7 @@ def parse_spec(filename):
 
     return spec
 
-def build_packages(spec, output, follow):
+def build_packages(spec, output, preserve):
     """
     Loops through package specs and call the package
     builders one by one
@@ -58,9 +58,9 @@ def build_packages(spec, output, follow):
 
     # Prefer settings from packagespec file
     try:
-        symlinks = spec['pkgbuild']['follow-symlinks']
+        symlinks = spec['pkgbuild']['preserve-symlinks']
     except KeyError:
-    	symlinks = follow
+    	symlinks = preserve
     
 
     packages = spec['packages']
@@ -99,7 +99,7 @@ def main():
                                    prog="repacked.py", version=__version__, usage="%prog specfile [options]")
     parser.add_option('--outputdir', '-o', default='.', help="packages will be placed in the specified directory")
     parser.add_option('--no-clean', '-C', action="store_true", help="Don't remove temporary files used to build packages")
-    parser.add_option('--follow', '-f', default=False, action="store_true", help="Follow Symlinks, default setting is to copy them as they are.")
+    parser.add_option('--preserve', '-p', default=False, action="store_true", help="Preserve Symlinks, default setting is to follow them.")
 
     options, arguments = parser.parse_args()
 
@@ -120,7 +120,7 @@ def main():
     
     # Create build trees based on the spec
     print("Building packages...")
-    tempdirs = build_packages(spec, options.outputdir, options.follow)
+    tempdirs = build_packages(spec, options.outputdir, options.preserve)
 
     # Clean up old build trees
     if not options.no_clean:
