@@ -11,7 +11,7 @@ from yapsy.PluginManager import PluginManager
 __author__ = "Jonathan Prior and fixes by Adam Hamsik"
 __copyright__ = "Copyright 2011, 736 Computing Services Limited"
 __license__ = "LGPL"
-__version__ = "103"
+__version__ = "104"
 __maintainer__ = "Adam Hamsik"
 __email__ = "adam.hamsik@chillisys.com"
 

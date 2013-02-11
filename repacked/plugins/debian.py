@@ -133,7 +133,7 @@ class DebianPackager(IPlugin):
                 
                 if os.path.isfile(filename):
                     shutil.copy(filename, os.path.join(tmpdir, "DEBIAN"))
-                    os.chmod(os.path.join(tmpdir, "DEBIAN", script), 0755)
+                    os.chmod(os.path.join(tmpdir, "DEBIAN", script), 755)
                 else:
                     print("Installation script {0} not found.".format(script))
         
