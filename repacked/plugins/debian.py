@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 from pkg_resources import resource_string
 from yapsy.IPlugin import IPlugin
 from mako.template import Template
@@ -67,7 +67,7 @@ class DebianPackager(IPlugin):
         # Copy across the contents of the file tree
         distutils.dir_util.copy_tree(spec['packagetree'], tmpdir, preserve_symlinks=self.preserve_symlinks)
 
-        print("Debian package tree created in {0}".format(tmpdir))
+        print(("Debian package tree created in {0}".format(tmpdir)))
 
         ## Create control file
 
@@ -127,7 +127,7 @@ class DebianPackager(IPlugin):
             scripts = None
         
         if scripts:
-            for app in scripts.iteritems():
+            for app in list(scripts.items()):
                 script = app[0]
                 filename = app[1]
                 
@@ -135,7 +135,7 @@ class DebianPackager(IPlugin):
                     shutil.copy(filename, os.path.join(tmpdir, "DEBIAN"))
                     os.chmod(os.path.join(tmpdir, "DEBIAN", script), 755)
                 else:
-                    print("Installation script {0} not found.".format(script))
+                    print(("Installation script {0} not found.".format(script)))
         
         return tmpdir
 
@@ -145,5 +145,5 @@ class DebianPackager(IPlugin):
         """
 
         filename = os.path.join(self.output_dir, filename)
-        print ("fakeroot dpkg-deb --build {0} {1}".format(directory, filename))
+        print(("fakeroot dpkg-deb --build {0} {1}".format(directory, filename)))
         os.system("fakeroot dpkg-deb --build {0} {1}".format(directory, filename))

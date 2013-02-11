@@ -96,7 +96,7 @@ class RPMPackager(IPlugin):
         scriptdata = {}
 
         if scripts:
-            for app in scripts.iteritems():
+            for app in scripts.items():
                 script = app[0]
                 filename = app[1]
                 

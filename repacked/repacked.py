@@ -4,7 +4,7 @@
 repacked - dead simple package creation
 """
 
-from __future__ import print_function
+
 from pkg_resources import resource_string
 from yapsy.PluginManager import PluginManager
 
