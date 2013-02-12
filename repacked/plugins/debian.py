@@ -63,9 +63,13 @@ class DebianPackager(IPlugin):
         
         # Create the directory holding control files
         os.mkdir(os.path.join(tmpdir, "DEBIAN"))
-
-        # Copy across the contents of the file tree
-        distutils.dir_util.copy_tree(spec['packagetree'], tmpdir, preserve_symlinks=self.preserve_symlinks)
+        
+        try:
+            packagetree=spec['packagetree']
+            # Copy across the contents of the file tree
+            distutils.dir_util.copy_tree(spec['packagetree'], tmpdir, preserve_symlinks=self.preserve_symlinks)
+        except KeyError:
+            print("No BUILDIR provided this is ok if this should be used as meta package.")
 
         print(("Debian package tree created in {0}".format(tmpdir)))
 
