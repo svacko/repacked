@@ -44,6 +44,10 @@ Package specifications are written in YAML. You can actually name the file whate
 
    pkgbuild:
       preserve-symlinks: true 
+      preserve-permissions: true
+      pkg-release-hooks: HOOKS/release_hooks
+      pkg-pre-package:   HOOKS/pre_package_hooks
+      pkg-post-build: 	 HOOKS/post_build_hooks
 
 Hopefully the above example should be fairly self-explanatory.
 Just for reference, the file tree that the above spec file would
@@ -52,6 +56,10 @@ expect is as follows:
     ┌── BUILD [directory]
     │   [ repacked automatically picks up all the files under
     │     this directory. ]
+    |
+    ├── DIST [directory]
+    |	[ original upstream sources can be put here, repacked will run pkg_release_hooks script to 
+    |	  put copy them to BUILD directory.] 
     │
     ├── SCRIPTS [directory]
     │   └── postinst
