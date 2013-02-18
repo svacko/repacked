@@ -21,6 +21,7 @@ class DebianPackager(IPlugin):
         self.package = {}
         self.output_dir = ""
         self.preserve_symlinks=False
+        self.preserve_permissions=True
     
     def checkarch(self, architecture):
         if architecture == "32-bit":
@@ -46,7 +47,7 @@ class DebianPackager(IPlugin):
 
         return filename
     
-    def tree(self, spec, package, output, preserve_symlinks):
+    def tree(self, spec, package, output, preserve_symlinks, preserve_permissions):
         """
         Builds a debian package tree
         """
@@ -55,6 +56,7 @@ class DebianPackager(IPlugin):
         self.package = package
         self.output_dir = output
         self.preserve_symlinks=preserve_symlinks
+        self.preserve_permissions=preserve_permissions
 
 	## Create directories
 
@@ -67,7 +69,7 @@ class DebianPackager(IPlugin):
         try:
             packagetree=spec['packagetree']
             # Copy across the contents of the file tree
-            distutils.dir_util.copy_tree(spec['packagetree'], tmpdir, preserve_symlinks=self.preserve_symlinks)
+            distutils.dir_util.copy_tree(spec['packagetree'], tmpdir, preserve_mode=self.preserve_permissions, preserve_symlinks=self.preserve_symlinks)
         except KeyError:
             print("No BUILDIR provided this is ok if this should be used as meta package.")
 

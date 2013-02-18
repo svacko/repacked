@@ -50,7 +50,7 @@ def parse_spec(filename):
 
     return spec
 
-def build_packages(spec, output, preserve):
+def build_packages(spec, output, preserve, permission):
     """
     Loops through package specs and call the package
     builders one by one
@@ -61,7 +61,12 @@ def build_packages(spec, output, preserve):
         symlinks = spec['pkgbuild']['preserve-symlinks']
     except KeyError:
     	symlinks = preserve
-    
+
+    # Prefer settings from packagespec file
+    try:
+        permissions = spec['pkgbuild']['preserve-permissions']
+    except KeyError:
+    	permissions = permission
 
     packages = spec['packages']
     tempdirs = []
@@ -77,7 +82,7 @@ def build_packages(spec, output, preserve):
             print("Module {0} isn't installed. Ignoring this package and continuing.".format(package['package']))
         
         if builder:
-            directory = builder.plugin_object.tree(spec, package, output, symlinks)
+            directory = builder.plugin_object.tree(spec, package, output, symlinks, permissions)
             builder.plugin_object.build(directory, builder.plugin_object.filenamegen(package))
             tempdirs.append(directory)
         
@@ -100,6 +105,7 @@ def main():
     parser.add_option('--outputdir', '-o', default='.', help="packages will be placed in the specified directory")
     parser.add_option('--no-clean', '-C', action="store_true", help="Don't remove temporary files used to build packages")
     parser.add_option('--preserve', '-p', default=False, action="store_true", help="Preserve Symlinks, default setting is to follow them.")
+    parser.add_option('--permission', '-P', default=True, action="store_true", help="Preserve File Permissions, default setting is to preserve them.")
 
     options, arguments = parser.parse_args()
 
@@ -120,7 +126,7 @@ def main():
     
     # Create build trees based on the spec
     print("Building packages...")
-    tempdirs = build_packages(spec, options.outputdir, options.preserve)
+    tempdirs = build_packages(spec, options.outputdir, options.preserve, options.permission)
 
     # Clean up old build trees
     if not options.no_clean:
