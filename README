@@ -38,6 +38,7 @@ Package specifications are written in YAML. You can actually name the file whate
     - package: debian
       architecture: 32-bit
       requires: libc6, libstdc++6
+      conflicts: foo
     - package: rpm
       architecture: 64-bit
       requires: libc.so.6, libstdc++.so.6
@@ -45,10 +46,18 @@ Package specifications are written in YAML. You can actually name the file whate
    pkgbuild:
       preserve-symlinks: true 
       preserve-permissions: true
-      pkg-release-hooks: HOOKS/release_hooks
-      pkg-pre-package:   HOOKS/pre_package_hooks
-      pkg-post-build: 	 HOOKS/post_build_hooks
+      pkg-update-dist: PKG/update_hooks
+      pkg-release-hooks: PKG/release_hooks
+      pkg-build-package: PKG/build_hooks
+      pkg-post-build: PKG/post_build_hooks
+      pkg-pre-package: PKG/pre_package_hooks
 
+Available architecture types are 
+ 1) 32bit, 32-bit
+ 2) 64bit, 64-bit
+ 3) system 
+  [ System arch uses architecture used on host/build system as result package arch. ]
+ 
 Hopefully the above example should be fairly self-explanatory.
 Just for reference, the file tree that the above spec file would
 expect is as follows:
@@ -60,6 +69,9 @@ expect is as follows:
     ├── DIST [directory]
     |	[ original upstream sources can be put here, repacked will run pkg_release_hooks script to 
     |	  put copy them to BUILD directory.] 
+    |
+    ├── PKG [directory]
+    |	[ Scripts used during package build stages ]
     │
     ├── SCRIPTS [directory]
     │   └── postinst
@@ -71,6 +83,24 @@ The scripts supported by repacked are preinst, postinst, prerm, postrm
 You would then start repacked as follows, assuming you're in the file tree above:
     
     repacked.py packagespec
+
+
+Package Build Stages
+++++++++++++++++++++
+
+1)     pkg-update-dist:	  PKG/update_hooks	-> Update upstream sources in DIST directory
+2)     pkg-release-hooks: PKG/release_hooks	-> Tag new release in DIST directory
+3)     pkg-build-package: PKG/build_hooks   	-> Build newly tagged build from DIST and copy it to BUILD
+4)     pkg-post-build: 	  PKG/post_build_hooks  -> Run some cleanup on build repo
+5)     pkg-pre-package:	  PKG/pre_package_hooks -> Do everything else just before packages are created           
+
+Order of running Package scripts is this:
+
+* pkg-update-dist
+* pkg-release-hooks
+* pkg-build-package
+* pkg-post-build
+* pkg-pre-package
 
 Package formats
 ---------------

@@ -11,7 +11,7 @@ from yapsy.PluginManager import PluginManager
 __author__ = "Jonathan Prior and fixes by Adam Hamsik"
 __copyright__ = "Copyright 2011, 736 Computing Services Limited"
 __license__ = "LGPL"
-__version__ = "104"
+__version__ = "105"
 __maintainer__ = "Adam Hamsik"
 __email__ = "adam.hamsik@chillisys.com"
 
@@ -105,7 +105,7 @@ def main():
     parser.add_option('--outputdir', '-o', default='.', help="packages will be placed in the specified directory")
     parser.add_option('--no-clean', '-C', action="store_true", help="Don't remove temporary files used to build packages")
     parser.add_option('--preserve', '-p', default=False, action="store_true", help="Preserve Symlinks, default setting is to follow them.")
-    parser.add_option('--permission', '-P', default=True, action="store_true", help="Preserve File Permissions, default setting is to preserve them.")
+    parser.add_option('--permission', '-P', default=True, action="store_false", help="Disable preservation of  File Permissions, default setting is to preserve them.")
 
     options, arguments = parser.parse_args()
 

@@ -24,11 +24,17 @@ class RPMPackager(IPlugin):
         self.tmpdir = ""
         self.preserve_symlinks=False
         self.preserve_permissions=True
+
+    def get_system_arch(self):
+        arch = platform.architecture()[0]
     
     def checkarch(self, architecture):
-        if architecture == "32-bit":
+        if architecture == "system":
+            architecture = self.get_system_arch()
+
+        if architecture == "32-bit" or architecture == "32bit":
             architecture = "i386"
-        elif architecture == "64-bit":
+        elif architecture == "64-bit" or architecture == "64bit":
             architecture = "x86_64"
             
         return architecture
