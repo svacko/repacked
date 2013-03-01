@@ -26,6 +26,7 @@ class DebianPackager(IPlugin):
 
     def get_system_arch(self):
         arch = platform.architecture()[0]
+        return arch
     
     def checkarch(self, architecture):
         if architecture == "system":

@@ -10,6 +10,7 @@ import shutil
 import tempfile
 import re
 import sys
+import platform
 
 tmpl_dir = os.path.expanduser("~/.repacked/templates")
 
@@ -27,6 +28,7 @@ class RPMPackager(IPlugin):
 
     def get_system_arch(self):
         arch = platform.architecture()[0]
+        return arch
     
     def checkarch(self, architecture):
         if architecture == "system":
