@@ -46,6 +46,7 @@ Package specifications are written in YAML. You can actually name the file whate
    pkgbuild:
       preserve-symlinks: true 
       preserve-permissions: true
+      dist-directory: DIST/
       pkg-update-dist: PKG/update_hooks
       pkg-release-hooks: PKG/release_hooks
       pkg-build-package: PKG/build_hooks

@@ -1,4 +1,5 @@
 
+from repacked import Configuration
 from pkg_resources import resource_string
 from yapsy.IPlugin import IPlugin
 from mako.template import Template
@@ -55,16 +56,13 @@ class DebianPackager(IPlugin):
 
         return filename
     
-    def tree(self, spec, package, output, preserve_symlinks, preserve_permissions):
+    def tree(self, spec, package, config):
         """
         Builds a debian package tree
         """
         
         self.spec = spec
         self.package = package
-        self.output_dir = output
-        self.preserve_symlinks=preserve_symlinks
-        self.preserve_permissions=preserve_permissions
 
 	## Create directories
 
@@ -77,7 +75,7 @@ class DebianPackager(IPlugin):
         try:
             packagetree=spec['packagetree']
             # Copy across the contents of the file tree
-            distutils.dir_util.copy_tree(spec['packagetree'], tmpdir, preserve_mode=self.preserve_permissions, preserve_symlinks=self.preserve_symlinks)
+            distutils.dir_util.copy_tree(spec['packagetree'], tmpdir, preserve_mode=config.preserve_permissions, preserve_symlinks=config.preserve_symlinks)
         except KeyError:
             print("No BUILDIR provided this is ok if this should be used as meta package.")
 
@@ -153,11 +151,11 @@ class DebianPackager(IPlugin):
         
         return tmpdir
 
-    def build(self, directory, filename):
+    def build(self, directory, filename, config):
         """
         Builds a deb package from the directory tree
         """
 
-        filename = os.path.join(self.output_dir, filename)
+        filename = os.path.join(config.output_dir, filename)
         print(("fakeroot dpkg-deb --build {0} {1}".format(directory, filename)))
         os.system("fakeroot dpkg-deb --build {0} {1}".format(directory, filename))

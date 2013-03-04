@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import sys, os
 
-version = '104'
+version = '106'
 
 if sys.version_info[0] == 2:
 	yapsy='Yapsy==1.9'
@@ -14,7 +14,7 @@ setup(name='repacked',
       description="repacked is a simple way to build multiple deb/RPM packages from a single directoryy",
       long_description=open("README").read(),
       classifiers=[
-         'Development Status :: 4 - Alpha',
+         'Development Status :: 6',
          'Environment :: Console',
          'Intended Audience :: Developers',
          'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',

@@ -11,7 +11,7 @@ from yapsy.PluginManager import PluginManager
 __author__ = "Jonathan Prior and fixes by Adam Hamsik"
 __copyright__ = "Copyright 2011, 736 Computing Services Limited"
 __license__ = "LGPL"
-__version__ = "105"
+__version__ = "106"
 __maintainer__ = "Adam Hamsik"
 __email__ = "adam.hamsik@chillisys.com"
 
@@ -23,6 +23,17 @@ import tempfile
 import distutils.dir_util
 import shutil
 import logging
+import subprocess
+
+class Configuration:
+    def __init__(self):
+        self.preserve_symlinks=False
+        self.preserve_permissions=True
+        self.output_dir=None
+        self.dist_directory=None
+        self.update_dist_hook=None
+        self.release_hook=None
+        self.build_hook=None
 
 plugin_dir = os.path.expanduser("~/.repacked/plugins")
 
@@ -50,24 +61,27 @@ def parse_spec(filename):
 
     return spec
 
-def build_packages(spec, output, preserve, permission):
+def update_dist_hook(config):
+    if config.update_dist_hook:
+        print ("Update Dist hook script at"+config.update_dist_hook)
+        subprocess.call([config.update_dist_hook])
+
+def release_dist_hook(config):
+
+    if config.release_hook:
+        print ("Release Hook script at"+config.release_hook)
+        subprocess.call([config.release_hook])
+
+def build_dist_hook(config):
+    if config.build_package_hook:
+        print ("Build Hook script at "+config.build_package_hook)
+        subprocess.call([config.build_package_hook])
+
+def build_packages(spec, config):
     """
     Loops through package specs and call the package
     builders one by one
     """
-
-    # Prefer settings from packagespec file
-    try:
-        symlinks = spec['pkgbuild']['preserve-symlinks']
-    except KeyError:
-    	symlinks = preserve
-
-    # Prefer settings from packagespec file
-    try:
-        permissions = spec['pkgbuild']['preserve-permissions']
-    except KeyError:
-    	permissions = permission
-
     packages = spec['packages']
     tempdirs = []
 
@@ -82,8 +96,13 @@ def build_packages(spec, output, preserve, permission):
             print("Module {0} isn't installed. Ignoring this package and continuing.".format(package['package']))
         
         if builder:
-            directory = builder.plugin_object.tree(spec, package, output, symlinks, permissions)
-            builder.plugin_object.build(directory, builder.plugin_object.filenamegen(package))
+            print("Running custom Distribution Hooks")
+            update_dist_hook(config)
+            release_dist_hook(config)
+            build_dist_hook(config)
+            print("Creating package files")
+            directory = builder.plugin_object.tree(spec, package, config)
+            builder.plugin_object.build(directory, builder.plugin_object.filenamegen(package), config)
             tempdirs.append(directory)
         
     return tempdirs
@@ -94,6 +113,46 @@ def clean_up(dirs):
     """
     for fldr in dirs:
         shutil.rmtree(fldr, ignore_errors=True)
+
+#
+# Merge configuration options for package build from arguments and from package config
+#
+def extract_config(spec, config, outputdir, symlinks, permission):
+    """
+    Merge configuration options and specfile option together to pass them arround
+    """
+    # Prefer settings from packagespec file
+    try:
+        config.preserve_symlinks = spec['pkgbuild']['preserve-symlinks']
+    except KeyError:
+    	config.preserve_symlinks = symlinks
+
+    try:
+        config.preserve_permissions = spec['pkgbuild']['preserve-permissions']
+    except KeyError:
+    	config.preserve_permissions = permission
+
+    try:
+        config.update_dist_hook = spec['pkgbuild']['pkg-update-dist']
+    except KeyError:
+        pass
+
+    try:
+        config.release_hook = spec['pkgbuild']['pkg-release-hooks']
+    except KeyError:
+        pass
+
+    try:
+        config.build_package_hook = spec['pkgbuild']['pkg-build-package']
+    except KeyError:
+        pass
+
+    try:
+        config.dist_directory = spec['pkgbuild']['dist-directory']
+    except KeyError:
+        config.dist_directory = 'DIST/'
+
+    config.output_dir=outputdir
 
 def main():
     """
@@ -117,6 +176,9 @@ def main():
         print("Run with --help option for more information.")
         sys.exit(0)
 
+    config=Configuration()
+    extract_config(spec, config, options.outputdir, options.preserve, options.permission)
+
     # Import the plugins
     print("Enumerating plugins...")
 
@@ -126,7 +188,7 @@ def main():
     
     # Create build trees based on the spec
     print("Building packages...")
-    tempdirs = build_packages(spec, options.outputdir, options.preserve, options.permission)
+    tempdirs = build_packages(spec, config)
 
     # Clean up old build trees
     if not options.no_clean:
