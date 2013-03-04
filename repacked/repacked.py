@@ -1,9 +1,9 @@
+
 #!/usr/bin/python
 
 """
 repacked - dead simple package creation
 """
-
 
 from pkg_resources import resource_string
 from yapsy.PluginManager import PluginManager
@@ -33,7 +33,7 @@ class Configuration:
         self.dist_directory=None
         self.update_dist_hook=None
         self.release_hook=None
-        self.build_hook=None
+        self.build_dist_hook=None
 
 plugin_dir = os.path.expanduser("~/.repacked/plugins")
 
@@ -67,15 +67,14 @@ def update_dist_hook(config):
         subprocess.call([config.update_dist_hook])
 
 def release_dist_hook(config):
-
     if config.release_hook:
         print ("Release Hook script at"+config.release_hook)
         subprocess.call([config.release_hook])
 
 def build_dist_hook(config):
-    if config.build_package_hook:
-        print ("Build Hook script at "+config.build_package_hook)
-        subprocess.call([config.build_package_hook])
+    if config.build_dist_hook:
+        print ("Build Hook script at "+config.build_dist_hook)
+        subprocess.call([config.build_dist_hook])
 
 def build_packages(spec, config):
     """
