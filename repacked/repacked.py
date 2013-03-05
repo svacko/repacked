@@ -64,21 +64,21 @@ def parse_spec(filename):
 def update_dist_hook(config, spec):
     if config.update_dist_hook:
         print ("Update Dist hook script at"+config.update_dist_hook)
-        output_log=open("/tmp/"+spec['name']+"-bundler.log", "w")
+        output_log=open("/tmp/"+spec['name']+"-bundler.log", "a")
         subprocess.call([config.update_dist_hook], stdout=output_log)
         output_log.close()
 
 def release_dist_hook(config, spec):
     if config.release_hook:
         print ("Release Hook script at"+config.release_hook)
-        output_log=open("/tmp/"+spec['name']+"-bundler.log", "w")        
+        output_log=open("/tmp/"+spec['name']+"-bundler.log", "a")        
         subprocess.call([config.release_hook], stdout=output_log)
         output_log.close()
 
 def build_dist_hook(config, spec):
     if config.build_dist_hook:
         print ("Build Hook script at "+config.build_dist_hook)
-        output_log=open("/tmp/"+spec['name']+"-bundler.log", "w")
+        output_log=open("/tmp/"+spec['name']+"-bundler.log", "a")
         subprocess.call([config.build_dist_hook], stdout=output_log)
         output_log.close()
 
