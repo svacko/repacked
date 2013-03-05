@@ -148,7 +148,7 @@ def extract_config(spec, config, outputdir, symlinks, permission):
         pass
 
     try:
-        config.build_package_hook = spec['pkgbuild']['pkg-build-package']
+        config.build_dist_hook = spec['pkgbuild']['pkg-build-package']
     except KeyError:
         pass
 
