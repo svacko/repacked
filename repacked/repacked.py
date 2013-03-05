@@ -61,20 +61,26 @@ def parse_spec(filename):
 
     return spec
 
-def update_dist_hook(config):
+def update_dist_hook(config, spec):
     if config.update_dist_hook:
         print ("Update Dist hook script at"+config.update_dist_hook)
-        subprocess.call([config.update_dist_hook])
+        output_log=open("/tmp/"+spec['name']+"-bundler.log", "w")
+        subprocess.call([config.update_dist_hook], stdout=output_log)
+        output_log.close()
 
-def release_dist_hook(config):
+def release_dist_hook(config, spec):
     if config.release_hook:
         print ("Release Hook script at"+config.release_hook)
-        subprocess.call([config.release_hook])
+        output_log=open("/tmp/"+spec['name']+"-bundler.log", "w")        
+        subprocess.call([config.release_hook], stdout=output_log)
+        output_log.close()
 
-def build_dist_hook(config):
+def build_dist_hook(config, spec):
     if config.build_dist_hook:
         print ("Build Hook script at "+config.build_dist_hook)
-        subprocess.call([config.build_dist_hook])
+        output_log=open("/tmp/"+spec['name']+"-bundler.log", "w")
+        subprocess.call([config.build_dist_hook], stdout=output_log)
+        output_log.close()
 
 def build_packages(spec, config):
     """
@@ -96,9 +102,9 @@ def build_packages(spec, config):
         
         if builder:
             print("Running custom Distribution Hooks")
-            update_dist_hook(config)
-            release_dist_hook(config)
-            build_dist_hook(config)
+            update_dist_hook(config, spec)
+            release_dist_hook(config, spec)
+            build_dist_hook(config, spec)
             print("Creating package files")
             directory = builder.plugin_object.tree(spec, package, config)
             builder.plugin_object.build(directory, builder.plugin_object.filenamegen(package), config)
