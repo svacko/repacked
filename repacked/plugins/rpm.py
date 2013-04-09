@@ -11,8 +11,12 @@ import tempfile
 import re
 import sys
 import platform
+import logging
 
 tmpl_dir = os.path.expanduser("~/.repacked/templates")
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
 
 if not os.path.exists(tmpl_dir):
     tmpl_dir = os.path.join(os.path.dirname(__file__),'../../repacked/templates')
@@ -79,9 +83,9 @@ class RPMPackager(IPlugin):
             # Copy across the contents of the file tree
             distutils.dir_util.copy_tree(spec['packagetree'], tmpdir, preserve_mode=config.preserve_permissions, preserve_symlinks=config.preserve_symlinks)
         except KeyError:
-            print("No BUILDIR provided this is ok if this should be used as meta package.")
+            logger.error("No BUILDIR provided this is ok if this should be used as meta package.")
 
-        print("RPM package tree created in {0}".format(tmpdir))
+        logger.debug("RPM package tree created in {0}".format(tmpdir))
 
         ## Create RPM spec file
 
@@ -120,7 +124,7 @@ class RPMPackager(IPlugin):
                         
                         scriptdata[script] = "".join(scriptdata[script])
                 else:
-                    print("Installation script {0} not found.".format(script))
+                    logger.error("Installation script {0} not found.".format(script))
         
         # Render the spec file from template
         cf_final = cf_template.render(

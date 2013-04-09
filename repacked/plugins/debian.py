@@ -11,8 +11,11 @@ import tempfile
 import re
 import sys
 import platform
+import logging
 
 tmpl_dir = os.path.expanduser("~/.repacked/templates")
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 if not os.path.exists(tmpl_dir):
     tmpl_dir = os.path.join(os.path.dirname(__file__),'../../repacked/templates')
@@ -77,9 +80,9 @@ class DebianPackager(IPlugin):
             # Copy across the contents of the file tree
             distutils.dir_util.copy_tree(spec['packagetree'], tmpdir, preserve_mode=config.preserve_permissions, preserve_symlinks=config.preserve_symlinks)
         except KeyError:
-            print("No BUILDIR provided this is ok if this should be used as meta package.")
+            logger.error("No BUILDIR provided this is ok if this should be used as meta package.")
 
-        print(("Debian package tree created in {0}".format(tmpdir)))
+        logger.debug(("Debian package tree created in {0}".format(tmpdir)))
 
         ## Create control file
 
@@ -147,7 +150,7 @@ class DebianPackager(IPlugin):
                     shutil.copy(filename, os.path.join(tmpdir, "DEBIAN"))
                     os.chmod(os.path.join(tmpdir, "DEBIAN", script), 0o755)
                 else:
-                    print(("Installation script {0} not found.".format(script)))
+                    logger.error(("Installation script {0} not found.".format(script)))
         
         return tmpdir
 
@@ -157,5 +160,5 @@ class DebianPackager(IPlugin):
         """
 
         filename = os.path.join(config.output_dir, filename)
-        print(("fakeroot dpkg-deb --build {0} {1}".format(directory, filename)))
-        os.system("fakeroot dpkg-deb --build {0} {1}".format(directory, filename))
+        logger.debug(("fakeroot dpkg-deb --build {0} {1}".format(directory, filename)))
+        os.system("fakeroot dpkg-deb --build {0} {1} 2>&1 1>/dev/null".format(directory, filename))

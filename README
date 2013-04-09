@@ -49,9 +49,9 @@ Package specifications are written in YAML. You can actually name the file whate
       dist-directory: DIST/
       pkg-update-dist: PKG/update_hooks
       pkg-release-hooks: PKG/release_hooks
+      pkg-release-hooks-tag: TAGNAME
       pkg-build-package: PKG/build_hooks
-      pkg-post-build: PKG/post_build_hooks
-      pkg-pre-package: PKG/pre_package_hooks
+      pkg-build-package-args: BUILD_PACKAGE_ARGS
 
 Available architecture types are 
  1) 32bit, 32-bit
@@ -92,16 +92,27 @@ Package Build Stages
 1)     pkg-update-dist:	  PKG/update_hooks	-> Update upstream sources in DIST directory
 2)     pkg-release-hooks: PKG/release_hooks	-> Tag new release in DIST directory
 3)     pkg-build-package: PKG/build_hooks   	-> Build newly tagged build from DIST and copy it to BUILD
-4)     pkg-post-build: 	  PKG/post_build_hooks  -> Run some cleanup on build repo
-5)     pkg-pre-package:	  PKG/pre_package_hooks -> Do everything else just before packages are created           
 
 Order of running Package scripts is this:
 
 * pkg-update-dist
 * pkg-release-hooks
 * pkg-build-package
-* pkg-post-build
-* pkg-pre-package
+
+Writting Package Hooks scripts
+++++++++++++++++++++++++++++++
+
+1) pkg-update-dist 
+   script doesn't receive any arguments
+
+2) pkg-release-hooks
+   Has two arguments:
+       * Package version number specified in version field of packagespec file
+       * Optional tagname/branch name specified in pkg-release-hooks-tag field of packagespec file
+
+3) pkg-build-package
+   Has one argument:
+       * Non specified optional arguments passed to a build script defined at pkg-build-package-args
 
 Package formats
 ---------------
@@ -121,4 +132,5 @@ If you want to create a new plugin, we recommend copying the source of an existi
 Further links
 -------------
 
+http://innovatrics.com/
 http://opensource.736cs.com/
