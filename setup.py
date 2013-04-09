@@ -12,7 +12,7 @@ else:
 setup(name='repacked',
       version=version,
       description="repacked is a simple way to build multiple deb/RPM packages from a single directoryy",
-      long_description=open("README").read(),
+      long_description=open("README.asciidoc").read(),
       classifiers=[
          'Development Status :: 6',
          'Environment :: Console',
