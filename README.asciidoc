@@ -22,6 +22,7 @@ Quick start
 
 Package specifications are written in YAML. You can actually name the file whatever you want, but for the sake of clarity we'll name this one "packagespec".
 
+----
    name: hello-world
    version: 1.0
    maintainer: Joe Bloggs <joe.bloggs@example.com>
@@ -52,6 +53,7 @@ Package specifications are written in YAML. You can actually name the file whate
       pkg-release-hooks-tag: TAGNAME
       pkg-build-package: PKG/build_hooks
       pkg-build-package-args: BUILD_PACKAGE_ARGS
+----
 
 Available architecture types are 
  1) 32bit, 32-bit
@@ -105,6 +107,7 @@ Writting Package Hooks scripts
 1) pkg-update-dist 
    script doesn't receive any arguments
 
+[source,sh]
 ----
 #!/bin/bash
 
@@ -149,6 +152,7 @@ update_repo
        * Package version number specified in version field of packagespec file
        * Optional tagname/branch name specified in pkg-release-hooks-tag field of packagespec file
 
+[source,sh]
 ----
 #!/bin/sh
 
