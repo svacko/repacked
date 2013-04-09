@@ -105,10 +105,58 @@ Writting Package Hooks scripts
 1) pkg-update-dist 
    script doesn't receive any arguments
 
+----
+#!/bin/bash
+
+GIT_SERVER="gitserver"
+GIT_USER="gituser"
+
+GIT_REPO="excample-git-repo.git"
+
+#
+# This script updates Sources in DIST directory to current version on git server
+#
+
+save_cd() {
+    pushd $(pwd) 1>/dev/null 2>&1
+    cd ${1} 1>/dev/null
+}
+
+save_popd() {
+    popd 1>/dev/null
+}
+
+reset_repo() {
+    git reset --hard
+}
+
+update_repo() {
+    if [ -d DIST/.git ]; then
+    save_cd DIST
+    git reset --hard
+    git pull --all
+    save_popd
+    else
+    git clone ${GIT_USER}@${GIT_SERVER}:${GIT_REPO} DIST/
+    fi
+}
+
+update_repo
+----
+
 2) pkg-release-hooks
    Has two arguments:
        * Package version number specified in version field of packagespec file
        * Optional tagname/branch name specified in pkg-release-hooks-tag field of packagespec file
+
+----
+#!/bin/sh
+
+echo "$1" > BUILD/path-to-sources/version
+
+# we just sync source files here no fancy release management here
+rsync -avc --delete DIST/* BUILD/path-to-sources
+----
 
 3) pkg-build-package
    Has one argument:
