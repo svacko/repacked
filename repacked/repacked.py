@@ -109,7 +109,7 @@ def build_packages(spec, config):
             build_pkg_hook(config, spec)
             logger.info("Creating package files")
             directory = builder.plugin_object.tree(spec, package, config)
-            builder.plugin_object.build(directory, builder.plugin_object.filenamegen(package), config)
+            builder.plugin_object.build(directory, builder.plugin_object.filenamegen(package, config), config)
             tempdirs.append(directory)
         
     return tempdirs
@@ -173,6 +173,15 @@ def extract_config(spec, config, outputdir, symlinks, permission):
         config.dist_directory = spec['pkgbuild']['dist-directory']
     except KeyError:
         config.dist_directory = 'DIST/'
+
+    try:
+        logger.info("define_env_version is true I will get pkg version from ENV")
+        config.define_env_version = spec['pkgbuild']['define_env_version']
+        env_name=spec['name'].replace("-", "_")+"_version"
+        config.version = os.environ[env_name]
+    except KeyError:
+        config.version = spec['version']
+        pass
 
     config.output_dir=outputdir
 

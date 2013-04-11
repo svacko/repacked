@@ -43,7 +43,7 @@ class DebianPackager(IPlugin):
             
         return architecture
 
-    def filenamegen(self, package):
+    def filenamegen(self, package, config):
         """
         Generates a nice simple filename for a package
         based on its package info
@@ -53,7 +53,7 @@ class DebianPackager(IPlugin):
 
         filename = "{name}_{version}_{architecture}.deb".format(
             name=spec['name'],
-            version=spec['version'],
+            version=config.version,
             architecture=self.checkarch(package['architecture']),
         )
 
@@ -92,7 +92,7 @@ class DebianPackager(IPlugin):
         
         cf_final = cf_template.render(
             package_name=spec['name'],
-            version=spec['version'],
+            version=config.version,
             architecture=self.checkarch(package['architecture']),
             maintainer=spec['maintainer'],
             size=os.path.getsize(tmpdir),

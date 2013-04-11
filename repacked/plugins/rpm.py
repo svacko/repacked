@@ -45,7 +45,7 @@ class RPMPackager(IPlugin):
             
         return architecture
 
-    def filenamegen(self, package):
+    def filenamegen(self, package, config):
         """
         Generates a nice simple filename for a package
         based on its package info
@@ -55,7 +55,7 @@ class RPMPackager(IPlugin):
 
         filename = "{name}_{version}_{architecture}.rpm".format(
             name=spec['name'],
-            version=spec['version'],
+            version=config.version,
             architecture=self.checkarch(package['architecture']),
         )
 
@@ -129,7 +129,7 @@ class RPMPackager(IPlugin):
         # Render the spec file from template
         cf_final = cf_template.render(
             package_name=spec['name'],
-            version=spec['version'],
+            version=config.version,
             maintainer=spec['maintainer'],
             summary=spec['summary'],
             description=spec['description'],
