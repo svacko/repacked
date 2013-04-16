@@ -74,7 +74,7 @@ def release_dist_hook(config, spec):
     if config.release_hook:
         logger.debug ("Release Hook script at: "+config.release_hook)
         output_log=open("/tmp/"+spec['name']+"-release-dist.log", "a")        
-        subprocess.call([config.release_hook, spec['version'], config.release_hook_tag], stdout=output_log)
+        subprocess.call([config.release_hook, config.version, config.release_hook_tag], stdout=output_log)
         output_log.close()
 
 def build_pkg_hook(config, spec):
@@ -175,10 +175,14 @@ def extract_config(spec, config, outputdir, symlinks, permission):
         config.dist_directory = 'DIST/'
 
     try:
-        logger.info("define_env_version is true I will get pkg version from ENV")
+	#
+	# if define_env_version is true then we take our build version from env variable called
+	# name_of_package_with_underscores_version
+	#		
         config.define_env_version = spec['pkgbuild']['define_env_version']
         env_name=spec['name'].replace("-", "_")+"_version"
         config.version = os.environ[env_name]
+        logger.info("define_env_version is true I got pkg version from ENV = "+config.version)
     except KeyError:
         config.version = spec['version']
         pass
