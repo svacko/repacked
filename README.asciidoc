@@ -22,6 +22,7 @@ Quick start
 
 Package specifications are written in YAML. You can actually name the file whatever you want, but for the sake of clarity we'll name this one "packagespec".
 
+----
    name: hello-world
    version: 1.0
    maintainer: Joe Bloggs <joe.bloggs@example.com>
@@ -38,10 +39,28 @@ Package specifications are written in YAML. You can actually name the file whate
     - package: debian
       architecture: 32-bit
       requires: libc6, libstdc++6
+      conflicts: foo
     - package: rpm
       architecture: 64-bit
       requires: libc.so.6, libstdc++.so.6
 
+   pkgbuild:
+      preserve-symlinks: true 
+      preserve-permissions: true
+      dist-directory: DIST/
+      pkg-update-dist: PKG/update_hooks
+      pkg-release-hooks: PKG/release_hooks
+      pkg-release-hooks-tag: TAGNAME
+      pkg-build-package: PKG/build_hooks
+      pkg-build-package-args: BUILD_PACKAGE_ARGS
+----
+
+Available architecture types are 
+ 1) 32bit, 32-bit
+ 2) 64bit, 64-bit
+ 3) system 
+  [ System arch uses architecture used on host/build system as result package arch. ]
+ 
 Hopefully the above example should be fairly self-explanatory.
 Just for reference, the file tree that the above spec file would
 expect is as follows:
@@ -49,6 +68,13 @@ expect is as follows:
     ┌── BUILD [directory]
     │   [ repacked automatically picks up all the files under
     │     this directory. ]
+    |
+    ├── DIST [directory]
+    |	[ original upstream sources can be put here, repacked will run pkg_release_hooks script to 
+    |	  put copy them to BUILD directory.] 
+    |
+    ├── PKG [directory]
+    |	[ Scripts used during package build stages ]
     │
     ├── SCRIPTS [directory]
     │   └── postinst
@@ -60,6 +86,85 @@ The scripts supported by repacked are preinst, postinst, prerm, postrm
 You would then start repacked as follows, assuming you're in the file tree above:
     
     repacked.py packagespec
+
+
+Package Build Stages
+++++++++++++++++++++
+
+1)     pkg-update-dist:	  PKG/update_hooks	-> Update upstream sources in DIST directory
+2)     pkg-release-hooks: PKG/release_hooks	-> Tag new release in DIST directory
+3)     pkg-build-package: PKG/build_hooks   	-> Build newly tagged build from DIST and copy it to BUILD
+
+Order of running Package scripts is this:
+
+* pkg-update-dist
+* pkg-release-hooks
+* pkg-build-package
+
+Writting Package Hooks scripts
+++++++++++++++++++++++++++++++
+
+1) pkg-update-dist 
+   script doesn't receive any arguments
+
+[source,sh]
+----
+#!/bin/bash
+
+GIT_SERVER="gitserver"
+GIT_USER="gituser"
+
+GIT_REPO="excample-git-repo.git"
+
+#
+# This script updates Sources in DIST directory to current version on git server
+#
+
+save_cd() {
+    pushd $(pwd) 1>/dev/null 2>&1
+    cd ${1} 1>/dev/null
+}
+
+save_popd() {
+    popd 1>/dev/null
+}
+
+reset_repo() {
+    git reset --hard
+}
+
+update_repo() {
+    if [ -d DIST/.git ]; then
+    save_cd DIST
+    git reset --hard
+    git pull --all
+    save_popd
+    else
+    git clone ${GIT_USER}@${GIT_SERVER}:${GIT_REPO} DIST/
+    fi
+}
+
+update_repo
+----
+
+2) pkg-release-hooks
+   Has two arguments:
+       * Package version number specified in version field of packagespec file
+       * Optional tagname/branch name specified in pkg-release-hooks-tag field of packagespec file
+
+[source,sh]
+----
+#!/bin/sh
+
+echo "$1" > BUILD/path-to-sources/version
+
+# we just sync source files here no fancy release management here
+rsync -avc --delete DIST/* BUILD/path-to-sources
+----
+
+3) pkg-build-package
+   Has one argument:
+       * Non specified optional arguments passed to a build script defined at pkg-build-package-args
 
 Package formats
 ---------------
@@ -79,4 +184,5 @@ If you want to create a new plugin, we recommend copying the source of an existi
 Further links
 -------------
 
+http://innovatrics.com/
 http://opensource.736cs.com/

@@ -3,4 +3,4 @@ dist/
 repacked.egg-info/
 *~
 *.pyc
-
+*.bak

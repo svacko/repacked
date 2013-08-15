@@ -10,8 +10,13 @@ import shutil
 import tempfile
 import re
 import sys
+import platform
+import logging
 
 tmpl_dir = os.path.expanduser("~/.repacked/templates")
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
 
 if not os.path.exists(tmpl_dir):
     tmpl_dir = os.path.join(os.path.dirname(__file__),'../../repacked/templates')
@@ -22,16 +27,25 @@ class RPMPackager(IPlugin):
         self.package = {}
         self.output_dir = ""
         self.tmpdir = ""
+        self.preserve_symlinks=False
+        self.preserve_permissions=True
+
+    def get_system_arch(self):
+        arch = platform.architecture()[0]
+        return arch
     
     def checkarch(self, architecture):
-        if architecture == "32-bit":
+        if architecture == "system":
+            architecture = self.get_system_arch()
+
+        if architecture == "32-bit" or architecture == "32bit":
             architecture = "i386"
-        elif architecture == "64-bit":
+        elif architecture == "64-bit" or architecture == "64bit":
             architecture = "x86_64"
             
         return architecture
 
-    def filenamegen(self, package):
+    def filenamegen(self, package, config):
         """
         Generates a nice simple filename for a package
         based on its package info
@@ -41,20 +55,19 @@ class RPMPackager(IPlugin):
 
         filename = "{name}_{version}_{architecture}.rpm".format(
             name=spec['name'],
-            version=spec['version'],
+            version=config.version,
             architecture=self.checkarch(package['architecture']),
         )
 
         return filename
     
-    def tree(self, spec, package, output):
+    def tree(self, spec, config):
         """
         Builds a debian package tree
         """
         
         self.spec = spec
         self.package = package
-        self.output_dir = output
 
         ## Create directories
 
@@ -65,10 +78,14 @@ class RPMPackager(IPlugin):
         program_files = os.path.join(tmpdir, "BUILD")
         os.mkdir(program_files)
 
-        # Copy across the contents of the file tree
-        distutils.dir_util.copy_tree(spec['packagetree'], program_files)
+        try:
+            packagetree=spec['packagetree']
+            # Copy across the contents of the file tree
+            distutils.dir_util.copy_tree(spec['packagetree'], tmpdir, preserve_mode=config.preserve_permissions, preserve_symlinks=config.preserve_symlinks)
+        except KeyError:
+            logger.error("No BUILDIR provided this is ok if this should be used as meta package.")
 
-        print("RPM package tree created in {0}".format(tmpdir))
+        logger.debug("RPM package tree created in {0}".format(tmpdir))
 
         ## Create RPM spec file
 
@@ -94,7 +111,7 @@ class RPMPackager(IPlugin):
         scriptdata = {}
 
         if scripts:
-            for app in scripts.iteritems():
+            for app in scripts.items():
                 script = app[0]
                 filename = app[1]
                 
@@ -107,12 +124,12 @@ class RPMPackager(IPlugin):
                         
                         scriptdata[script] = "".join(scriptdata[script])
                 else:
-                    print("Installation script {0} not found.".format(script))
+                    logger.error("Installation script {0} not found.".format(script))
         
         # Render the spec file from template
         cf_final = cf_template.render(
             package_name=spec['name'],
-            version=spec['version'],
+            version=config.version,
             maintainer=spec['maintainer'],
             summary=spec['summary'],
             description=spec['description'],
@@ -123,7 +140,7 @@ class RPMPackager(IPlugin):
             architecture=self.checkarch(package['architecture']),
             file_list=filelist,
             license="N/A",
-            output_dir=os.path.abspath(self.output_dir),
+            output_dir=os.path.abspath(config.output_dir),
             build_dir=tmpdir,
 
             # Install scripts
@@ -138,7 +155,7 @@ class RPMPackager(IPlugin):
         
         return tmpdir
 
-    def build(self, directory, filename):
+    def build(self, directory, filename, config):
         """
         Builds a RPM package from the directory tree
         """
