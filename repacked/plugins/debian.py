@@ -58,6 +58,12 @@ class DebianPackager(IPlugin):
         )
 
         return filename
+
+    def get_deps(self, package, config):
+        if package.get('requires') is not None:
+            Template(package.get('requires')).render(package_version=config.version)
+        else:
+            None
     
     def tree(self, spec, package, config):
         """
@@ -80,12 +86,11 @@ class DebianPackager(IPlugin):
             # Copy across the contents of the file tree
             distutils.dir_util.copy_tree(spec['packagetree'], tmpdir, preserve_mode=config.preserve_permissions, preserve_symlinks=config.preserve_symlinks)
         except KeyError:
-            logger.error("No BUILDIR provided this is ok if this should be used as meta package.")
+            logger.error("No BUILDIR provided this is ok if this should be used as meta pckage.")
 
         logger.debug(("Debian package tree created in {0}".format(tmpdir)))
-
+        
         ## Create control file
-
         cf = open(os.path.join(tmpdir, "DEBIAN", "control"), "w")
         
         cf_template = Template(filename=os.path.join(tmpl_dir, "debcontrol.tmpl"))
@@ -98,7 +103,7 @@ class DebianPackager(IPlugin):
             size=os.path.getsize(tmpdir),
             summary=spec['summary'],
             description="\n .\n ".join(re.split(r"\n\s\s*", spec['description'].strip())),
-            dependencies=package.get('requires'),
+            dependencies=self.get_deps(package, config),
             predepends=package.get('predepends'),
             replaces=package.get('replaces'),
             provides=package.get('provides'),
