@@ -61,9 +61,9 @@ class DebianPackager(IPlugin):
 
     def get_deps(self, package, config):
         if package.get('requires') is not None:
-            Template(package.get('requires')).render(package_version=config.version)
+            return Template(package.get('requires')).render(package_version=config.version)
         else:
-            None
+            return None
     
     def tree(self, spec, package, config):
         """
