@@ -22,6 +22,7 @@ import sys
 import tempfile
 import distutils.dir_util
 import shutil
+import shelve
 import logging
 import subprocess
 
@@ -37,6 +38,10 @@ class Configuration:
         self.release_hook=None
         self.build_pkg_hook=None
         self.build_pkg_hook_args=""
+        self.version=None
+        self.define_env_version=None
+        self.config_version_db_path="/var/tmp/dbversion.db"
+        self.config_version_db=None
         
 plugin_dir = os.path.expanduser("~/.repacked/plugins")
 
@@ -81,21 +86,22 @@ def release_dist_hook(config, spec):
 def build_pkg_hook(config, spec):
     if config.build_pkg_hook:
         logger.debug ("Build Hook script at: "+config.build_pkg_hook)
-        output_log=open("/tmp/"+spec['name']+"-build-pkg.log", "a")
-
         args = config.build_pkg_hook_args if config.build_pkg_hook_args else ""
-
         subprocess.call([config.build_pkg_hook, args])
-        output_log.close()
 
 def run_package_build(spec, config, package, builder, tempdirs):
     logger.info("Running custom Distribution Hooks")
     update_dist_hook(config, spec)
     release_dist_hook(config, spec)
     build_pkg_hook(config, spec)
+
     logger.info("Creating package files")
     directory = builder.plugin_object.tree(spec, package, config)
     builder.plugin_object.build(directory, builder.plugin_object.filenamegen(package, config), config)
+
+    env_name=spec['name'].replace("-", "_")+"_version"
+    config.confing_version_db[env_name]=config.version
+
     tempdirs.append(directory)
 
 def build_packages(spec, config):
@@ -120,7 +126,7 @@ def build_packages(spec, config):
         
         # We want to build a package if there is no version defined or if version matches
         if package.get('pkg-version', None) is None or re.match(str(package.get('pkg-version','')), config.version) is not None:
-            logger.info("package version:"+format(package.get('pkg-version'))+", config version: "+format(config.version))
+            logger.info("package version:"+format(package.get('pkg-version'))+", config version: "+str(config.version))
             run_package_build(spec, config, package, builder, tempdirs)
 
     return tempdirs
@@ -152,7 +158,6 @@ def extract_config(spec, config, outputdir, symlinks, permission):
         config.preserve_permissions = assign_value(spec.get('pkgbuild').get('preserve-permissions'), permission)
         config.dist_directory = assign_value(spec.get('pkgbuild').get('dist-directory'), 'DIST/')
 
-
         config.update_dist_hook = assign_value(spec.get('pkgbuild').get('pkg-update-dist'))
         config.release_hook = assign_value(spec.get('pkgbuild').get('pkg-release-hooks'))
 
@@ -173,10 +178,10 @@ def extract_config(spec, config, outputdir, symlinks, permission):
         # name_of_package_with_underscores_version
         #		
         config.define_env_version = assign_value(spec.get('pkgbuild').get('define_env_version'))
-     
-        env_name=spec['name'].replace("-", "_")+"_version"
-        config.version = assign_value(os.environ.get(env_name), spec.get('version'))
-                
+
+    env_name=spec['name'].replace("-", "_")+"_version"
+    config.version = assign_value(os.environ.get(env_name), spec.get('version'))
+    if config.define_env_version is not None:
         logger.info("define_env_version is true I got pkg version from ENV = "+format(config.version))
 
 def main():
@@ -205,13 +210,15 @@ def main():
     config=Configuration()
     extract_config(spec, config, options.outputdir, options.preserve, options.permission)
 
+    config.confing_version_db = shelve.open(config.config_version_db_path)
+
     # Import the plugins
     logger.debug("Enumerating plugins...")
 
     for plugin in pluginMgr.getAllPlugins():
         logger.debug("Found plugin {name}".format(name=plugin.name))
         pkg_plugins[plugin.name] = plugin
-    
+
     # Create build trees based on the spec
     logger.info("Building packages...")
     tempdirs = build_packages(spec, config)
@@ -220,6 +227,8 @@ def main():
     if not options.no_clean:
         logger.info("Cleaning up...")
         clean_up(tempdirs)
+
+    config.confing_version_db.close()
 
 if __name__ == "__main__":
     main()
