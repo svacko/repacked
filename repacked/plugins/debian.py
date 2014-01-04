@@ -31,7 +31,7 @@ class DebianPackager(IPlugin):
     def get_system_arch(self):
         arch = platform.architecture()[0]
         return arch
-    
+
     def checkarch(self, architecture):
         if architecture == "system":
             architecture = self.get_system_arch()
@@ -40,7 +40,7 @@ class DebianPackager(IPlugin):
             architecture = "i386"
         elif architecture == "64-bit" or architecture == "64bit":
             architecture = "amd64"
-            
+
         return architecture
 
     def filenamegen(self, package, config):
@@ -64,24 +64,23 @@ class DebianPackager(IPlugin):
             return Template(package.get('requires')).render(package_version=config.version)
         else:
             return None
-    
+
     def tree(self, spec, package, config):
         """
         Builds a debian package tree
         """
-        
+
         self.spec = spec
         self.package = package
-        self.output_dir = output
-        
+
         ## Create directories
 
         # Create the temporary folder
         tmpdir = tempfile.mkdtemp()
-        
+
         # Create the directory holding control files
         os.mkdir(os.path.join(tmpdir, "DEBIAN"))
-        
+
         try:
             packagetree=spec['packagetree']
             # Copy across the contents of the file tree
@@ -90,12 +89,12 @@ class DebianPackager(IPlugin):
             logger.error("No BUILDIR provided this is ok if this should be used as meta pckage.")
 
         logger.debug(("Debian package tree created in {0}".format(tmpdir)))
-        
+
         ## Create control file
         cf = open(os.path.join(tmpdir, "DEBIAN", "control"), "w")
-        
+
         cf_template = Template(filename=os.path.join(tmpl_dir, "debcontrol.tmpl"))
-        
+
         cf_final = cf_template.render(
             package_name=spec['name'],
             version=config.version,
@@ -113,51 +112,51 @@ class DebianPackager(IPlugin):
 
         cf.write(cf_final)
         cf.close()
-        
+
         ## Check for lintian overrides and add them to the build tree
         overrides = package.get('lintian-overrides')
-        
+
         if overrides:
             lint_tmpl = "{package}: {override}\n"
             lintfile = ""
-            
+
             overrides = overrides.split(",")
-            
+
             for o in overrides:
                 override = o.strip()
                 lintfile += lint_tmpl.format(package=spec['name'], override=override)
-            
+
             try:
                 os.makedirs(os.path.join(tmpdir, "usr/share/lintian/overrides"))
                 do_overrides = True
             except:
                 # Directory exists, skip it
                 do_overrides = False
-            
+
             if do_overrides:
                 lf = open(os.path.join(tmpdir, "usr/share/lintian/overrides", spec['name']), "w")
                 lf.write(lintfile)
                 lf.close()
-                
+
         ## Copy over installation scripts
-        
+
         try:
             scripts = spec['scripts']
         except:
             # No installation scripts
             scripts = None
-        
+
         if scripts:
             for app in list(scripts.items()):
                 script = app[0]
                 filename = app[1]
-                
+
                 if os.path.isfile(filename):
                     shutil.copy(filename, os.path.join(tmpdir, "DEBIAN"))
                     os.chmod(os.path.join(tmpdir, "DEBIAN", script), 0o755)
                 else:
                     logger.error(("Installation script {0} not found.".format(script)))
-        
+
         return tmpdir
 
     def build(self, directory, filename, config):
