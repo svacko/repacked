@@ -22,6 +22,7 @@ import sys
 import tempfile
 import distutils.dir_util
 import shutil
+import dbm
 import shelve
 import logging
 import subprocess
@@ -213,7 +214,7 @@ def main():
 
     try:
         config.config_version_db = shelve.open(config.config_version_db_path)
-    except OSError:
+    except dbm.error:
         config.config_version_db = None
 
     # Import the plugins
