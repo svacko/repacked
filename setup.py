@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import sys, os
 
-version = '110'
+version = '120'
 
 if sys.version_info[0] == 2:
 	yapsy='Yapsy==1.9'

@@ -166,6 +166,40 @@ rsync -avc --delete DIST/* BUILD/path-to-sources
    Has one argument:
        * Non specified optional arguments passed to a build script defined at pkg-build-package-args
 
+Package Versions
+----------------
+
+There are two way which can be use to define a generated package version. 
+
+1) _version_ tag in packagespec
+2) _define_env_version_ tag in packagespec pkgbuil section and _package_name_version_ environmental variable
+
+This makes package version much more dynamic. We need a way yo specify requirements for each package version. 
+Value in pkg-version is matched against current package version and if they match we use that section data.
+
+
+----
+packages:
+  - package: debian
+    architecture: all
+    pkg-version: 1.6
+    requires: ruby1.9 | ruby, webafis-ds-app, remote-admin, apt-show-versions, ansi-iso-sdk-linux, webafis-expressid-afis3, idkit-pro-sdk, iseglib-sdk, webafis-nginx-conf, webafis-ds-activemq, inn-oracle-jdk, inn-usb-mount, webafis-ds-graphics
+  - package: debian
+    architecture: all
+    pkg-version: 1.5
+    requires: ruby1.9 | ruby, webafis-ds-app, remote-admin, apt-show-versions, ansi-iso-sdk-linux, expressid-afis-enterprise, idkit-pro-sdk, iseglib-sdk, webafis-nginx-conf, webafis-ds-activemq, webafis-ds-afismq, inn-oracle-jdk, inn-usb-mount, webafis-ds-graphics
+----
+
+Package Requirements
+--------------------
+
+For some situations we need to define dynamic version dependency for a package. E.g. if package requires another package with exact same version every time. Requires text is going to be used as template 
+where package_version is replaced for current package version.
+
+----
+requires: webafis-es-gems (=${package_version}), inn-postgresql, inn-oracle-instaclient-client, cups, ttf-liberation, curl
+----
+
 Package formats
 ---------------
 
