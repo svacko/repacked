@@ -42,7 +42,7 @@ class Configuration:
         self.define_env_version=None
         self.config_version_db_path="/var/tmp/dbversion.db"
         self.config_version_db=None
-        
+
 plugin_dir = os.path.expanduser("~/.repacked/plugins")
 
 if not os.path.exists(plugin_dir):
@@ -79,7 +79,7 @@ def update_dist_hook(config, spec):
 def release_dist_hook(config, spec):
     if config.release_hook:
         logger.debug ("Release Hook script at: "+config.release_hook)
-        output_log=open("/tmp/"+spec['name']+"-release-dist.log", "a")        
+        output_log=open("/tmp/"+spec['name']+"-release-dist.log", "a")
         subprocess.call([config.release_hook, config.version, config.release_hook_tag], stdout=output_log)
         output_log.close()
 
@@ -100,7 +100,8 @@ def run_package_build(spec, config, package, builder, tempdirs):
     builder.plugin_object.build(directory, builder.plugin_object.filenamegen(package, config), config)
 
     env_name=spec['name'].replace("-", "_")+"_version"
-    config.confing_version_db[env_name]=config.version
+    if config.config_version_db:
+        config.config_version_db[env_name]=config.version
 
     tempdirs.append(directory)
 
@@ -123,7 +124,7 @@ def build_packages(spec, config):
         except KeyError:
             logger.error("Module {0} isn't installed. Ignoring this package and continuing.".format(package['package']))
             exit
-        
+
         # We want to build a package if there is no version defined or if version matches
         if package.get('pkg-version', None) is None or re.match(str(package.get('pkg-version','')), config.version) is not None:
             logger.info("package version:"+format(package.get('pkg-version'))+", config version: "+str(config.version))
@@ -176,7 +177,7 @@ def extract_config(spec, config, outputdir, symlinks, permission):
         #
         # if define_env_version is true then we take our build version from env variable called
         # name_of_package_with_underscores_version
-        #		
+        #
         config.define_env_version = assign_value(spec.get('pkgbuild').get('define_env_version'))
 
     env_name=spec['name'].replace("-", "_")+"_version"
@@ -210,7 +211,10 @@ def main():
     config=Configuration()
     extract_config(spec, config, options.outputdir, options.preserve, options.permission)
 
-    config.confing_version_db = shelve.open(config.config_version_db_path)
+    try:
+        config.config_version_db = shelve.open(config.config_version_db_path)
+    except OSError:
+        config.config_version_db = None
 
     # Import the plugins
     logger.debug("Enumerating plugins...")
@@ -228,7 +232,8 @@ def main():
         logger.info("Cleaning up...")
         clean_up(tempdirs)
 
-    config.confing_version_db.close()
+    if config.config_version_db:
+        config.config_version_db.close()
 
 if __name__ == "__main__":
     main()
