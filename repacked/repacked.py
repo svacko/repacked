@@ -233,7 +233,10 @@ def main():
     # Clean up old build trees
     if not options.no_clean:
         logger.info("Cleaning up...")
-        clean_up(tempdirs)
+        if not os.environ.get("REPACKED_DEBUG"):
+            clean_up(tempdirs)
+        else:
+            logger.info("Not removing temp directories {dirs} debug enabled".format(dirs=tempdirs))
 
     if config.config_version_db:
         config.config_version_db.close()
