@@ -81,7 +81,7 @@ class RPMPackager(IPlugin):
         try:
             packagetree=spec['packagetree']
             # Copy across the contents of the file tree
-            distutils.dir_util.copy_tree(spec['packagetree'], tmpdir, preserve_mode=config.preserve_permissions, preserve_symlinks=config.preserve_symlinks)
+            distutils.dir_util.copy_tree(spec['packagetree'], os.path.join(tmpdir, "BUILD"), preserve_mode=config.preserve_permissions, preserve_symlinks=config.preserve_symlinks)
         except KeyError:
             logger.error("No BUILDIR provided this is ok if this should be used as meta package.")
 
