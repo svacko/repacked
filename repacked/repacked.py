@@ -11,7 +11,7 @@ from yapsy.PluginManager import PluginManager
 __author__ = "Jonathan Prior and fixes by Adam Hamsik"
 __copyright__ = "Copyright 2011, 736 Computing Services Limited"
 __license__ = "LGPL"
-__version__ = "110"
+__version__ = "130"
 __maintainer__ = "Adam Hamsik"
 __email__ = "adam.hamsik@chillisys.com"
 
@@ -73,16 +73,16 @@ def parse_spec(filename):
 def update_dist_hook(config, spec):
     if config.update_dist_hook:
         logger.debug ("Update Dist hook script at: "+config.update_dist_hook)
-        output_log=open("/tmp/"+spec['name']+"-update-dist.log", "a")
-        subprocess.call([config.update_dist_hook], stdout=output_log)
-        output_log.close()
+        #output_log=open("/tmp/"+spec['name']+"-update-dist.log", "a")
+        subprocess.call([config.update_dist_hook])
+        #output_log.close()
 
 def release_dist_hook(config, spec):
     if config.release_hook:
         logger.debug ("Release Hook script at: "+config.release_hook)
-        output_log=open("/tmp/"+spec['name']+"-release-dist.log", "a")
-        subprocess.call([config.release_hook, config.version, config.release_hook_tag], stdout=output_log)
-        output_log.close()
+        #output_log=open("/tmp/"+spec['name']+"-release-dist.log", "a")
+        subprocess.call([config.release_hook, config.version, config.release_hook_tag])
+        #output_log.close()
 
 def build_pkg_hook(config, spec):
     if config.build_pkg_hook:
@@ -190,8 +190,10 @@ def main():
     """
     Set up the application
     """
-
-    logger.setLevel(logging.INFO)
+    if os.environ.get("REPACKED_DEBUG"):
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
 
     parser = optparse.OptionParser(description="Creates deb and RPM packages from files defined in a package specification.", prog="repacked.py", version=__version__, usage="%prog specfile [options]")
     parser.add_option('--outputdir', '-o', default='.', help="packages will be placed in the specified directory")

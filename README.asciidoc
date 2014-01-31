@@ -29,10 +29,10 @@ Package specifications are written in YAML. You can actually name the file whate
    summary: Warmly welcoming the world
    description: >
       Hello World is an application to say hello to the world.
-   
+
    scripts:
       postinst: SCRIPTS/postinst
-   
+
    packagetree: BUILD/
 
    packages:
@@ -45,7 +45,7 @@ Package specifications are written in YAML. You can actually name the file whate
       requires: libc.so.6, libstdc++.so.6
 
    pkgbuild:
-      preserve-symlinks: true 
+      preserve-symlinks: true
       preserve-permissions: true
       dist-directory: DIST/
       pkg-update-dist: PKG/update_hooks
@@ -55,12 +55,12 @@ Package specifications are written in YAML. You can actually name the file whate
       pkg-build-package-args: BUILD_PACKAGE_ARGS
 ----
 
-Available architecture types are 
+Available architecture types are
  1) 32bit, 32-bit
  2) 64bit, 64-bit
- 3) system 
+ 3) system
   [ System arch uses architecture used on host/build system as result package arch. ]
- 
+
 Hopefully the above example should be fairly self-explanatory.
 Just for reference, the file tree that the above spec file would
 expect is as follows:
@@ -70,8 +70,8 @@ expect is as follows:
     │     this directory. ]
     |
     ├── DIST [directory]
-    |	[ original upstream sources can be put here, repacked will run pkg_release_hooks script to 
-    |	  put copy them to BUILD directory.] 
+    |	[ original upstream sources can be put here, repacked will run pkg_release_hooks script to
+    |	  put copy them to BUILD directory.]
     |
     ├── PKG [directory]
     |	[ Scripts used during package build stages ]
@@ -84,7 +84,7 @@ expect is as follows:
 The scripts supported by repacked are preinst, postinst, prerm, postrm
 
 You would then start repacked as follows, assuming you're in the file tree above:
-    
+
     repacked.py packagespec
 
 
@@ -104,7 +104,7 @@ Order of running Package scripts is this:
 Writting Package Hooks scripts
 ++++++++++++++++++++++++++++++
 
-1) pkg-update-dist 
+1) pkg-update-dist
    script doesn't receive any arguments
 
 [source,sh]
@@ -169,12 +169,12 @@ rsync -avc --delete DIST/* BUILD/path-to-sources
 Package Versions
 ----------------
 
-There are two way which can be use to define a generated package version. 
+There are two way which can be use to define a generated package version.
 
 1) _version_ tag in packagespec
 2) _define_env_version_ tag in packagespec pkgbuil section and _package_name_version_ environmental variable
 
-This makes package version much more dynamic. We need a way yo specify requirements for each package version. 
+This makes package version much more dynamic. We need a way yo specify requirements for each package version.
 Value in pkg-version is matched against current package version and if they match we use that section data.
 
 
@@ -193,7 +193,7 @@ packages:
 Package Requirements
 --------------------
 
-For some situations we need to define dynamic version dependency for a package. E.g. if package requires another package with exact same version every time. Requires text is going to be used as template 
+For some situations we need to define dynamic version dependency for a package. E.g. if package requires another package with exact same version every time. Requires text is going to be used as template
 where package_version is replaced for current package version.
 
 ----
@@ -214,6 +214,11 @@ If you want to create a new plugin, we recommend copying the source of an existi
  - The plugin system checks for a .plugin file in the plugins/ directory, it's an ini file containing basic information about the plugin. module is the Python module that contains your plugin.
  - The first method of a plugin that repacked calls is tree(). That acts as a surrogate __init__(). tree() creates all the files necessary to build the package in a temporary directory.
  - The second method called is build(), which calls the build application (e.g. dpkg-deb or rpmbuild) and creates the package.
+
+Troubleshooting
+ -------------
+
+ If you have REPACKED_DEBUG environmental variable defined during build. Then repacked.py will print debug messages to stdout.
 
 Further links
 -------------

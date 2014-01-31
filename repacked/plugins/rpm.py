@@ -33,7 +33,7 @@ class RPMPackager(IPlugin):
     def get_system_arch(self):
         arch = platform.architecture()[0]
         return arch
-    
+
     def checkarch(self, architecture):
         if architecture == "system":
             architecture = self.get_system_arch()
@@ -42,7 +42,7 @@ class RPMPackager(IPlugin):
             architecture = "i386"
         elif architecture == "64-bit" or architecture == "64bit":
             architecture = "x86_64"
-            
+
         return architecture
 
     def filenamegen(self, package, config):
@@ -50,7 +50,7 @@ class RPMPackager(IPlugin):
         Generates a nice simple filename for a package
         based on its package info
         """
-        
+
         spec = self.spec
 
         filename = "{name}_{version}_{architecture}.rpm".format(
@@ -60,12 +60,12 @@ class RPMPackager(IPlugin):
         )
 
         return filename
-    
+
     def tree(self, spec, config):
         """
         Builds a debian package tree
         """
-        
+
         self.spec = spec
         self.package = package
 
@@ -73,7 +73,7 @@ class RPMPackager(IPlugin):
 
         # Create the temporary folder
         self.tmpdir = tmpdir = tempfile.mkdtemp()
-        
+
         # Create the directory holding the program files
         program_files = os.path.join(tmpdir, "BUILD")
         os.mkdir(program_files)
@@ -90,9 +90,9 @@ class RPMPackager(IPlugin):
         ## Create RPM spec file
 
         cf = open(os.path.join(tmpdir, "rpm.spec"), "w")
-        
+
         cf_template = Template(filename=os.path.join(tmpl_dir, "rpmspec.tmpl"))
-        
+
         # Create file list
         filelist = []
         for root, subfolders, files in os.walk(program_files):
@@ -100,32 +100,32 @@ class RPMPackager(IPlugin):
                 filelist.append('%dir "{0}"'.format(os.path.join(root, folder).replace(program_files, "")))
             for file in files:
                 filelist.append('"{0}"'.format(os.path.join(root, file).replace(program_files, "")))
-        
+
         # Collect the install scripts
         try:
             scripts = spec['scripts']
         except:
             # No installation scripts
             scripts = None
-        
+
         scriptdata = {}
 
         if scripts:
             for app in scripts.items():
                 script = app[0]
                 filename = app[1]
-                
+
                 if os.path.isfile(filename):
                     with open(filename, "r") as f:
                         scriptdata[script] = f.readlines()
 
                         if scriptdata[script][0].startswith("#!"):
                             del scriptdata[script][0]
-                        
+
                         scriptdata[script] = "".join(scriptdata[script])
                 else:
                     logger.error("Installation script {0} not found.".format(script))
-        
+
         # Render the spec file from template
         cf_final = cf_template.render(
             package_name=spec['name'],
@@ -149,10 +149,10 @@ class RPMPackager(IPlugin):
             preun=scriptdata.get('prerm'),
             postun=scriptdata.get('postrm'),
         )
-        
+
         cf.write(cf_final)
         cf.close()
-        
+
         return tmpdir
 
     def build(self, directory, filename, config):
