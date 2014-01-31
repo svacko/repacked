@@ -162,13 +162,20 @@ class RPMPackager(IPlugin):
 
 #        directory = os.path.join(directory, "BUILD")
 
-        logger.debug("fakeroot rpmbuild -bb --buildroot={buildroot} --target={architecture} {specfile}".format(
-            architecture=self.checkarch(self.package['architecture']),
-            buildroot=directory,
-            specfile=os.path.abspath(os.path.join(self.tmpdir, "rpm.spec"))))
+        if  os.environ.get("REPACKED_DEBUG"):
+            rpm_ops="--define 'noclean 1'"
+        else:
+            rpm_ops=""
 
-        os.system("fakeroot rpmbuild -bb --buildroot={buildroot} --target={architecture} {specfile}".format(
+        logger.debug("fakeroot rpmbuild -bb --buildroot={buildroot} --target={architecture} {rpm_ops} {specfile}".format(
             architecture=self.checkarch(self.package['architecture']),
             buildroot=directory,
-            specfile=os.path.abspath(os.path.join(self.tmpdir, "rpm.spec"))
-        ))
+            specfile=os.path.abspath(os.path.join(self.tmpdir, "rpm.spec")),
+            rpm_ops=rpm_ops))
+
+        os.system("fakeroot rpmbuild -bb --buildroot={buildroot} --target={architecture} {rpm_ops} {specfile}".format(
+            architecture=self.checkarch(self.package['architecture']),
+            buildroot=directory,
+            specfile=os.path.abspath(os.path.join(self.tmpdir, "rpm.spec")),
+            rpm_ops=rpm_ops))
+

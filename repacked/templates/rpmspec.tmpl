@@ -51,6 +51,11 @@ ${postun}
 
 ${description}
 
+%Clean
+%if "%{noclean}" == ""
+   rm -rf $RPM_BUILD_ROOT
+%endif
+
 %%files
 ${"\n".join(file_list)}
 
