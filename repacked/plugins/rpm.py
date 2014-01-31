@@ -160,7 +160,12 @@ class RPMPackager(IPlugin):
         Builds a RPM package from the directory tree
         """
 
-        directory = os.path.join(directory, "BUILD")
+#        directory = os.path.join(directory, "BUILD")
+
+        logger("fakeroot rpmbuild -bb --buildroot={buildroot} --target={architecture} {specfile}".format(
+            architecture=self.checkarch(self.package['architecture']),
+            buildroot=directory,
+            specfile=os.path.abspath(os.path.join(self.tmpdir, "rpm.spec")))
 
         os.system("fakeroot rpmbuild -bb --buildroot={buildroot} --target={architecture} {specfile}".format(
             architecture=self.checkarch(self.package['architecture']),
