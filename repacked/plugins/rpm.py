@@ -160,7 +160,7 @@ class RPMPackager(IPlugin):
         Builds a RPM package from the directory tree
         """
 
-#        directory = os.path.join(directory, "BUILD")
+        directory = os.path.join(directory, "BUILD")
 
         if  os.environ.get("REPACKED_DEBUG"):
             rpm_ops="--define 'noclean 1'"
