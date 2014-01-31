@@ -61,7 +61,7 @@ class RPMPackager(IPlugin):
 
         return filename
 
-    def tree(self, spec, config):
+    def tree(self, spec, package, config):
         """
         Builds a debian package tree
         """
