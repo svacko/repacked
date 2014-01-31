@@ -162,7 +162,7 @@ class RPMPackager(IPlugin):
 
 #        directory = os.path.join(directory, "BUILD")
 
-        logger("fakeroot rpmbuild -bb --buildroot={buildroot} --target={architecture} {specfile}".format(
+        logger.debug("fakeroot rpmbuild -bb --buildroot={buildroot} --target={architecture} {specfile}".format(
             architecture=self.checkarch(self.package['architecture']),
             buildroot=directory,
             specfile=os.path.abspath(os.path.join(self.tmpdir, "rpm.spec"))))
