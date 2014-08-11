@@ -86,7 +86,7 @@ class DebianPackager(IPlugin):
             # Copy across the contents of the file tree
             distutils.dir_util.copy_tree(spec['packagetree'], tmpdir, preserve_mode=config.preserve_permissions, preserve_symlinks=config.preserve_symlinks)
         except KeyError:
-            logger.error("No BUILDIR provided this is ok if this should be used as meta pckage.")
+            logger.warning("No BUILDIR provided. This is ok if this should be used as meta package.")
 
         logger.debug(("Debian package tree created in {0}".format(tmpdir)))
 
