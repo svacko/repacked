@@ -38,11 +38,11 @@ Package specifications are written in YAML. You can actually name the file whate
    packages:
     - package: debian
       architecture: 32-bit
-      requires: libc6, libstdc++6
+      requires: libc6, libstdc++6 (=4.6.3)
       conflicts: foo
     - package: rpm
       architecture: 64-bit
-      requires: libc.so.6, libstdc++.so.6
+      requires: glibc, compat-libstdc++-296 = 2.96-144
 
    pkgbuild:
       preserve-symlinks: true
@@ -60,6 +60,8 @@ Available architecture types are
  2) 64bit, 64-bit
  3) system
   [ System arch uses architecture used on host/build system as result package arch. ]
+ 4) all (deb) / noarch (rpm)
+  [ Platform independent packages. ]
 
 Hopefully the above example should be fairly self-explanatory.
 Just for reference, the file tree that the above spec file would
