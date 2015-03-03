@@ -8,12 +8,12 @@ repacked - dead simple package creation
 from pkg_resources import resource_string
 from yapsy.PluginManager import PluginManager
 
-__author__ = "Jonathan Prior and fixes by Adam Hamsik"
+__author__ = "Jonathan Prior, enhanced by Adam Hamsik, Stanislav Bocinec"
 __copyright__ = "Copyright 2011, 736 Computing Services Limited"
 __license__ = "LGPL"
 __version__ = "130"
-__maintainer__ = "Adam Hamsik"
-__email__ = "adam.hamsik@chillisys.com"
+__maintainer__ = "Stanislav Bocinec"
+__email__ = "stanislav.bocinec@innovatrics.com"
 
 import optparse
 import yaml
