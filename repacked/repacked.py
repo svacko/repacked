@@ -195,7 +195,7 @@ def main():
     else:
         logger.setLevel(logging.INFO)
 
-    parser = optparse.OptionParser(description="Creates deb and RPM packages from files defined in a package specification.", prog="repacked.py", version=__version__, usage="%prog specfile [options]")
+    parser = optparse.OptionParser(description="Creates DEB and RPM packages from files defined in a package specification.", prog="repacked.py", version=__version__, usage="%prog specfile [options]")
     parser.add_option('--outputdir', '-o', default='.', help="packages will be placed in the specified directory")
     parser.add_option('--no-clean', '-C', action="store_true", help="Don't remove temporary files used to build packages")
     parser.add_option('--preserve', '-p', default=False, action="store_true", help="Preserve Symlinks, default setting is to follow them.")
