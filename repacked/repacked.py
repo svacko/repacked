@@ -11,7 +11,7 @@ from yapsy.PluginManager import PluginManager
 __author__ = "Jonathan Prior, enhanced by Adam Hamsik, Stanislav Bocinec"
 __copyright__ = "Copyright 2011, 736 Computing Services Limited"
 __license__ = "LGPL"
-__version__ = "130"
+__version__ = "131"
 __maintainer__ = "Stanislav Bocinec"
 __email__ = "stanislav.bocinec@innovatrics.com"
 
@@ -149,7 +149,7 @@ def assign_value(first, default=None):
 #
 # Merge configuration options for package build from arguments and from package config
 #
-def extract_config(spec, config, outputdir, symlinks, permission):
+def extract_config(spec, config, outputdir, symlinks, permission, pkgformat):
     """
     Merge configuration options and specfile option together to pass them arround
     """
@@ -175,6 +175,12 @@ def extract_config(spec, config, outputdir, symlinks, permission):
             if config.build_pkg_hook_args is None:
                 logger.warning("No build scripts args specified env var: "+env_name+" and pkg-build-package-args config option were not specified")
 
+        if pkgformat not in {'i386', 'amd64', 'all'}:
+            logger.error("pkg-format not supported. Supported values: i386/amd64/all")
+            sys.exit(1)
+        config.pkg_format = pkgformat
+        print "SS: Package format: " + pkgformat
+
         #
         # if define_env_version is true then we take our build version from env variable called
         # name_of_package_with_underscores_version
@@ -182,6 +188,7 @@ def extract_config(spec, config, outputdir, symlinks, permission):
         config.define_env_version = assign_value(spec.get('pkgbuild').get('define_env_version'))
 
     env_name=spec['name'].replace("-", "_")+"_version"
+    print "SS: env_name " + env_name
     config.version = assign_value(os.environ.get(env_name), spec.get('version'))
     if config.define_env_version is not None:
         logger.info("define_env_version is true I got pkg version from ENV = "+format(config.version))
@@ -198,6 +205,7 @@ def main():
     parser = optparse.OptionParser(description="Creates DEB and RPM packages from files defined in a package specification.", prog="repacked.py", version=__version__, usage="%prog specfile [options]")
     parser.add_option('--outputdir', '-o', default='.', help="packages will be placed in the specified directory")
     parser.add_option('--no-clean', '-C', action="store_true", help="Don't remove temporary files used to build packages")
+    parser.add_option('--pkg-format', '-f', default="all", help="Specify comma separated list of package format that will be built, leave blank to create all formats")
     parser.add_option('--preserve', '-p', default=False, action="store_true", help="Preserve Symlinks, default setting is to follow them.")
     parser.add_option('--permission', '-P', default=True, action="store_false", help="Disable preservation of  File Permissions, default setting is to preserve them.")
 
@@ -212,7 +220,7 @@ def main():
         sys.exit(1)
 
     config=Configuration()
-    extract_config(spec, config, options.outputdir, options.preserve, options.permission)
+    extract_config(spec, config, options.outputdir, options.preserve, options.permission, options.pkg_format)
 
     try:
         config.config_version_db = shelve.open(config.config_version_db_path)
