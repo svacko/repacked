@@ -111,9 +111,9 @@ def build_packages(spec, config):
     Loops through package specs and call the package
     builders one by one
     """
-    import re
 
     packages = spec['packages']
+    name = spec['name']
     tempdirs = []
 
     # Eventually replace this with a plugin system
@@ -121,11 +121,14 @@ def build_packages(spec, config):
     # packages
     for package in packages:
         try:
-            builder = pkg_plugins[package['package']]
+            if config.pkg_format in { "all", package['package'] }:
+                builder = pkg_plugins[package['package']]
+            else: 
+                logger.info("Ignoring %s package format for %s package and continuing" % (package['package'], name))
+                continue
         except KeyError:
             logger.error("Module {0} isn't installed. Ignoring this package and continuing.".format(package['package']))
             exit
-
         # We want to build a package if there is no version defined or if version matches
         if package.get('pkg-version', None) is None or re.match(str(package.get('pkg-version','')), config.version) is not None:
             logger.info("package version:"+format(package.get('pkg-version'))+", config version: "+str(config.version))
@@ -153,6 +156,8 @@ def extract_config(spec, config, outputdir, symlinks, permission, pkgformat):
     """
     Merge configuration options and specfile option together to pass them arround
     """
+    import re
+
     config.output_dir=outputdir
     if spec.get('pkgbuild') is not None:
         # Prefer settings from packagespec file
@@ -175,11 +180,10 @@ def extract_config(spec, config, outputdir, symlinks, permission, pkgformat):
             if config.build_pkg_hook_args is None:
                 logger.warning("No build scripts args specified env var: "+env_name+" and pkg-build-package-args config option were not specified")
 
-        if pkgformat not in {'i386', 'amd64', 'all'}:
-            logger.error("pkg-format not supported. Supported values: i386/amd64/all")
+        if pkgformat not in {'debian', 'rpm', 'all'}:
+            logger.error("pkg-format not supported. Supported values: debian/rpm/all")
             sys.exit(1)
         config.pkg_format = pkgformat
-        print "SS: Package format: " + pkgformat
 
         #
         # if define_env_version is true then we take our build version from env variable called
@@ -188,7 +192,6 @@ def extract_config(spec, config, outputdir, symlinks, permission, pkgformat):
         config.define_env_version = assign_value(spec.get('pkgbuild').get('define_env_version'))
 
     env_name=spec['name'].replace("-", "_")+"_version"
-    print "SS: env_name " + env_name
     config.version = assign_value(os.environ.get(env_name), spec.get('version'))
     if config.define_env_version is not None:
         logger.info("define_env_version is true I got pkg version from ENV = "+format(config.version))
@@ -205,7 +208,7 @@ def main():
     parser = optparse.OptionParser(description="Creates DEB and RPM packages from files defined in a package specification.", prog="repacked.py", version=__version__, usage="%prog specfile [options]")
     parser.add_option('--outputdir', '-o', default='.', help="packages will be placed in the specified directory")
     parser.add_option('--no-clean', '-C', action="store_true", help="Don't remove temporary files used to build packages")
-    parser.add_option('--pkg-format', '-f', default="all", help="Specify comma separated list of package format that will be built, leave blank to create all formats")
+    parser.add_option('--pkg-format', '-f', default="all", help="Specify package format (all/debian/rpm), default setting is to create all")
     parser.add_option('--preserve', '-p', default=False, action="store_true", help="Preserve Symlinks, default setting is to follow them.")
     parser.add_option('--permission', '-P', default=True, action="store_false", help="Disable preservation of  File Permissions, default setting is to preserve them.")
 
