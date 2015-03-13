@@ -1,4 +1,3 @@
-
 #!/usr/bin/python
 
 """
@@ -43,6 +42,7 @@ class Configuration:
         self.define_env_version=None
         self.config_version_db_path="/var/tmp/dbversion.db"
         self.config_version_db=None
+        self.pkg_format="all"
 
 plugin_dir = os.path.expanduser("~/.repacked/plugins")
 
@@ -121,7 +121,7 @@ def build_packages(spec, config):
     # packages
     for package in packages:
         try:
-            if config.pkg_format in { "all", package['package'] }:
+            if config.pkg_format in [ "all", package['package'] ]:
                 builder = pkg_plugins[package['package']]
             else: 
                 logger.info("Ignoring %s package format for %s package and continuing" % (package['package'], name))
@@ -179,12 +179,6 @@ def extract_config(spec, config, outputdir, symlinks, permission, pkgformat):
             config.build_pkg_hook_args = assign_value(spec.get('pkgbuild').get('pkg-build-package-args'), os.environ.get(env_name))
             if config.build_pkg_hook_args is None:
                 logger.warning("No build scripts args specified env var: "+env_name+" and pkg-build-package-args config option were not specified")
-
-        if pkgformat not in {'debian', 'rpm', 'all'}:
-            logger.error("pkg-format not supported. Supported values: debian/rpm/all")
-            sys.exit(1)
-        config.pkg_format = pkgformat
-
         #
         # if define_env_version is true then we take our build version from env variable called
         # name_of_package_with_underscores_version
@@ -195,6 +189,11 @@ def extract_config(spec, config, outputdir, symlinks, permission, pkgformat):
     config.version = assign_value(os.environ.get(env_name), spec.get('version'))
     if config.define_env_version is not None:
         logger.info("define_env_version is true I got pkg version from ENV = "+format(config.version))
+    
+    if pkgformat not in ['debian', 'rpm', 'all']:
+        logger.error("pkg-format not supported. Supported values: debian/rpm/all")
+        sys.exit(1)
+    config.pkg_format = pkgformat
 
 def main():
     """
