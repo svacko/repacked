@@ -25,6 +25,7 @@ import dbm
 import shelve
 import logging
 import subprocess
+import re
 
 logger = logging.getLogger()
 
