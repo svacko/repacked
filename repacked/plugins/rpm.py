@@ -97,9 +97,9 @@ class RPMPackager(IPlugin):
         filelist = []
         for root, subfolders, files in os.walk(program_files):
             for folder in subfolders:
-                filelist.append('%dir "{0}"'.format(os.path.join(root, folder).replace(program_files, "")))
+                filelist.append('%dir "{0}"'.format(os.path.join(root, folder).replace(program_files, "").replace("%","[%]")))
             for file in files:
-                filelist.append('"{0}"'.format(os.path.join(root, file).replace(program_files, "")))
+                filelist.append('"{0}"'.format(os.path.join(root, file).replace(program_files, "").replace("%","[%]")))
 
         # Collect the install scripts
         try:
