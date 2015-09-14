@@ -73,29 +73,47 @@ def parse_spec(filename):
 
 def update_dist_hook(config, spec):
     if config.update_dist_hook:
-        logger.debug ("Update Dist hook script at: "+config.update_dist_hook)
-        #output_log=open("/tmp/"+spec['name']+"-update-dist.log", "a")
-        subprocess.call([config.update_dist_hook])
-        #output_log.close()
+        logger.debug ("Update Dist hook script: "+config.update_dist_hook)
+        try:
+            subprocess.check_call([config.update_dist_hook])
+        except subprocess.CalledProcessError:
+            logger.error("ERROR running " + config.update_dist_hook + " script")
+            return(1)
 
 def release_dist_hook(config, spec):
     if config.release_hook:
-        logger.debug ("Release Hook script at: "+config.release_hook)
-        #output_log=open("/tmp/"+spec['name']+"-release-dist.log", "a")
-        subprocess.call([config.release_hook, config.version, config.release_hook_tag])
-        #output_log.close()
+        logger.debug ("Release Hook script: "+config.release_hook)
+        try:
+            subprocess.check_call([config.release_hook, config.version, config.release_hook_tag])
+        except subprocess.CalledProcessError:
+            logger.error("ERROR running " + config.release_hook + " script")
+            return(1)
 
 def build_pkg_hook(config, spec):
     if config.build_pkg_hook:
-        logger.debug ("Build Hook script at: "+config.build_pkg_hook)
+        logger.debug ("Build Hook script: "+config.build_pkg_hook)
         args = config.build_pkg_hook_args if config.build_pkg_hook_args else ""
-        subprocess.call([config.build_pkg_hook, args])
+        try:
+            subprocess.check_call([config.build_pkg_hook, args])
+        except subprocess.CalledProcessError:
+            logger.error("ERROR running " + config.build_pkg_hook + " script")
+            return(1)
 
 def run_package_build(spec, config, package, builder, tempdirs):
-    logger.info("Running custom Distribution Hooks")
-    update_dist_hook(config, spec)
-    release_dist_hook(config, spec)
-    build_pkg_hook(config, spec)
+    logger.debug("Running custom distribution hook")
+    if update_dist_hook(config, spec):
+        logger.error("ERROR running distribution hook. Exitting")
+        sys.exit(1)
+
+    logger.debug("Running custom release hook")
+    if release_dist_hook(config, spec):
+        logger.error("ERROR running release hook. Exitting")
+        sys.exit(1)
+
+    logger.debug("Running custom build hook")
+    if build_pkg_hook(config, spec):
+        logger.error("ERROR running build hook. Exitting")
+        sys.exit(1)
 
     logger.info("Creating package files")
     directory = builder.plugin_object.tree(spec, package, config)
