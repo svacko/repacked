@@ -53,9 +53,10 @@ class RPMPackager(IPlugin):
 
         spec = self.spec
 
-        filename = "{name}_{version}_{architecture}.rpm".format(
+        filename = "{name}_{version}-{release}.{architecture}.rpm".format(
             name=spec['name'],
             version=config.version,
+            release=config.release,
             architecture=self.checkarch(package['architecture']),
         )
 
@@ -130,6 +131,7 @@ class RPMPackager(IPlugin):
         cf_final = cf_template.render(
             package_name=spec['name'],
             version=config.version,
+            release=config.release,
             maintainer=spec['maintainer'],
             summary=spec['summary'],
             description=spec['description'],

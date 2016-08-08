@@ -6,7 +6,7 @@ version = '132'
 if sys.version_info[0] == 2:
 	yapsy='Yapsy==1.9'
 else:
-	yapsy='Yapsy==1.9.2_python3'
+	yapsy='Yapsy==1.9.2-python3'
 
 
 setup(name='repacked',

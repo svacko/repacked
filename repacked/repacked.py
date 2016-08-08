@@ -40,7 +40,9 @@ class Configuration:
         self.build_pkg_hook=None
         self.build_pkg_hook_args=""
         self.version=None
+        self.release=None
         self.define_env_version=None
+        self.define_env_release=None
         self.config_version_db_path="/var/tmp/dbversion.db"
         self.config_version_db=None
         self.pkg_format="all"
@@ -190,7 +192,7 @@ def extract_config(spec, config, outputdir, symlinks, permission, pkgformat):
         if config.release_hook:
             config.release_hook_tag = assign_value(spec.get('pkgbuild').get('pkg-release-hooks-tag'), spec['version'])
             if config.release_hook_tag is None:
-                logger.warning("Release tag not specified using defined version as TAG.")
+                logger.warning("Release hook tag not specified using defined version as TAG.")
 
         config.build_pkg_hook = assign_value(spec.get('pkgbuild').get('pkg-build-package'))
         if config.build_pkg_hook:
@@ -203,11 +205,21 @@ def extract_config(spec, config, outputdir, symlinks, permission, pkgformat):
         # name_of_package_with_underscores_version
         #
         config.define_env_version = assign_value(spec.get('pkgbuild').get('define_env_version'))
+        #
+        # if define_env_release is true then we take our build release version from env variable called
+        # name_of_package_with_underscores_release
+        #
+        config.define_env_release = assign_value(spec.get('pkgbuild').get('define_env_release'))
 
     env_name=spec['name'].replace("-", "_")+"_version"
     config.version = assign_value(os.environ.get(env_name), spec.get('version'))
     if config.define_env_version is not None:
         logger.info("define_env_version is true I got pkg version from ENV = "+format(config.version))
+    
+    env_name=spec['name'].replace("-", "_")+"_release"
+    config.release = assign_value(os.environ.get(env_name), spec.get('release'))
+    if config.define_env_release is not None:
+        logger.info("define_env_release is true. I got pkg release version from ENV = "+format(config.release))
     
     if pkgformat not in ['debian', 'rpm', 'all']:
         logger.error("pkg-format not supported. Supported values: debian/rpm/all")
