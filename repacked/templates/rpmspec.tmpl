@@ -1,7 +1,6 @@
 Buildroot: ${build_dir}
 Name: ${package_name}
 Version: ${version}
-Release: ${release}
 Summary: ${summary}
 License: ${license}
 Group: Applications/Productivity
@@ -24,7 +23,13 @@ Requires(pre): ${predepends}
 AutoReqProv: no
 
 %%define _rpmdir ${output_dir}
+% if release:
 %%define _rpmfilename ${package_name}_${version}-${release}.${architecture}.rpm
+Release: ${release}
+% else:
+%%define _rpmfilename ${package_name}_${version}.${architecture}.rpm
+Release: 1
+% endif
 %%define _unpackaged_files_terminate_build 0
 
 % if prein:
