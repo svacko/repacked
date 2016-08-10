@@ -10,7 +10,7 @@ from yapsy.PluginManager import PluginManager
 __author__ = "Jonathan Prior, enhanced by Adam Hamsik, Stanislav Bocinec"
 __copyright__ = "Copyright 2011, 736 Computing Services Limited"
 __license__ = "LGPL"
-__version__ = "134"
+__version__ = "135"
 __maintainer__ = "Stanislav Bocinec"
 __email__ = "stanislav.bocinec@innovatrics.com"
 
@@ -86,7 +86,7 @@ def release_dist_hook(config, spec):
     if config.release_hook:
         logger.debug ("Release Hook script: "+config.release_hook)
         try:
-            subprocess.check_call([config.release_hook, config.version, config.release_hook_tag])
+            subprocess.check_call([config.release_hook, config.version + '.' + str(config.release), config.release_hook_tag])
         except subprocess.CalledProcessError:
             logger.error("ERROR running " + config.release_hook + " script")
             return(1)
@@ -152,7 +152,7 @@ def build_packages(spec, config):
             exit
         # We want to build a package if there is no version defined or if version matches
         if package.get('pkg-version', None) is None or re.match(str(package.get('pkg-version','')), config.version) is not None:
-            logger.info("package version:"+format(package.get('pkg-version'))+", config version: "+str(config.version))
+            logger.info("package version:"+format(package.get('pkg-version'))+", config version: "+str(config.version)+", release version: "+str(config.release))
             run_package_build(spec, config, package, builder, tempdirs)
 
     return tempdirs
@@ -213,13 +213,13 @@ def extract_config(spec, config, outputdir, symlinks, permission, pkgformat):
 
     env_name=spec['name'].replace("-", "_")+"_version"
     config.version = assign_value(os.environ.get(env_name), spec.get('version'))
-    if config.define_env_version is not None:
-        logger.info("define_env_version is true I got pkg version from ENV = "+format(config.version))
+    #if config.define_env_version is not None:
+    #    logger.info("define_env_version is set, package version = "+format(config.version))
     
     env_name=spec['name'].replace("-", "_")+"_release"
     config.release = assign_value(os.environ.get(env_name), spec.get('release'))
-    if config.define_env_release is not None:
-        logger.info("define_env_release is true. I got pkg release version from ENV = "+format(config.release))
+    #if config.define_env_release is not None:
+    #    logger.info("define_env_release is set, package version release = "+format(config.release))
     
     if pkgformat not in ['debian', 'rpm', 'all']:
         logger.error("pkg-format not supported. Supported values: debian/rpm/all")
