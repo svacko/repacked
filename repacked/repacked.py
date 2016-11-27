@@ -226,6 +226,19 @@ def extract_config(spec, config, outputdir, symlinks, permission, pkgformat):
         sys.exit(1)
     config.pkg_format = pkgformat
 
+def initialize_project(project):
+    """
+    Initialize new empty packaging project in current directory
+    """
+    cwd = os.getcwd()
+    project_abs_path=os.path.join(os.getcwd(), project)
+    if not os.path.exists(project_abs_path):
+        os.mkdir(project_abs_path)
+
+    os.chdir(project_abs_path)
+
+    os.chdir(cwd)
+
 def main():
     """
     Set up the application
@@ -239,10 +252,17 @@ def main():
     parser.add_option('--outputdir', '-o', default='.', help="packages will be placed in the specified directory")
     parser.add_option('--no-clean', '-C', action="store_true", help="Don't remove temporary files used to build packages")
     parser.add_option('--pkg-format', '-f', default="all", help="Specify package format (all/debian/rpm), default setting is to create all")
+    parser.add_option('--init', '-i', dest='project_name', default=False, help="Initialize empty project in new directory")
     parser.add_option('--preserve', '-p', default=False, action="store_true", help="Preserve Symlinks, default setting is to follow them.")
     parser.add_option('--permission', '-P', default=True, action="store_false", help="Disable preservation of  File Permissions, default setting is to preserve them.")
 
     options, arguments = parser.parse_args()
+    
+    # Initialize new empty project
+    if options.project_name:
+        logger.info("Initializing new project \"{}\"".format(options.project_name))
+        initialize_project(options.project_name)
+        sys.exit(0)
 
     # Parse the specification
     try:
@@ -251,7 +271,7 @@ def main():
         parser.print_usage()
         logger.error("Run with --help option for more information.")
         sys.exit(1)
-
+    
     config=Configuration()
     extract_config(spec, config, options.outputdir, options.preserve, options.permission, options.pkg_format)
 
