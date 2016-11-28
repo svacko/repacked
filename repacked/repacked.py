@@ -6,11 +6,13 @@ repacked - dead simple package creation
 
 from pkg_resources import resource_string
 from yapsy.PluginManager import PluginManager
+from mako.template import Template
+from mako import exceptions
 
 __author__ = "Jonathan Prior, enhanced by Adam Hamsik, Stanislav Bocinec"
 __copyright__ = "Copyright 2011, 736 Computing Services Limited"
 __license__ = "LGPL"
-__version__ = "136"
+__version__ = "137"
 __maintainer__ = "Stanislav Bocinec"
 __email__ = "stanislav.bocinec@innovatrics.com"
 
@@ -226,18 +228,26 @@ def extract_config(spec, config, outputdir, symlinks, permission, pkgformat):
         sys.exit(1)
     config.pkg_format = pkgformat
 
-def initialize_project(project):
+def initialize_project(project_name):
     """
-    Initialize new empty packaging project in current directory
+    Initialize new empty packaging project
     """
-    cwd = os.getcwd()
-    project_abs_path=os.path.join(os.getcwd(), project)
+    project_abs_path=os.path.join(os.getcwd(), project_name)
     if not os.path.exists(project_abs_path):
         os.mkdir(project_abs_path)
 
-    os.chdir(project_abs_path)
+    tmpl_dir = os.path.expanduser("~/.repacked/templates")
+    if not os.path.exists(tmpl_dir):
+        tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),'../../repacked/templates')
 
-    os.chdir(cwd)
+    project_spec_file = open(os.path.join(project_abs_path, "packagespec"), "w")
+    project_spec_tmpl = Template(filename=os.path.join(tmpl_dir, "packagespec.tmpl"))
+    project_spec_content = project_spec_tmpl.render(
+        project_name=project_name
+    )
+
+    project_spec_file.write(project_spec_content)
+    project_spec_file.close()
 
 def main():
     """
@@ -257,7 +267,7 @@ def main():
     parser.add_option('--permission', '-P', default=True, action="store_false", help="Disable preservation of  File Permissions, default setting is to preserve them.")
 
     options, arguments = parser.parse_args()
-    
+
     # Initialize new empty project
     if options.project_name:
         logger.info("Initializing new project \"{}\"".format(options.project_name))

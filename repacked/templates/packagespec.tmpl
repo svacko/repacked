@@ -1,0 +1,28 @@
+name: ${project_name}
+version: 1.0.0
+release: 1
+maintainer: First Name <first.name@example.com>
+summary: ${project_name} example spec
+description: ${project_name} description
+    
+packagetree: BUILD/
+
+scripts: 
+    postinst: SCRIPTS/postinst
+    prerm: SCRIPTS/prerm
+  
+packages:
+  - package: rpm
+    architecture: noarch
+    requires:
+  - package: debian
+    architecture: all
+    requires:
+
+pkgbuild:
+    preserve-permissions: true
+    define_env_version: true
+    define_env_release: true
+    pkg-update-dist: PKG/dist-update.sh
+    pkg-release-hooks: PKG/release.sh
+    pkg-build-package: PKG/build.sh
