@@ -105,13 +105,17 @@ class RPMPackager(IPlugin):
         filelist = []
         for root, subfolders, files in os.walk(program_files):
             for folder in subfolders:
-                if folder in exclude_filelist:
+                dirname = os.path.join(root, folder).replace(program_files, "").replace("%","[%]")
+                if dirname in exclude_filelist:
+                    logger.debug("Excluding directory {0} from RPM spec dir list".format(dirname))
                     continue
                 else:
-                    filename = os.path.join(root, folder).replace(program_files, "").replace("%", "[%]")
-                    filelist.append('%dir "{0}"'.format(os.path.join(root, folder).replace(program_files, "").replace("%","[%]")))
+                    logger.debug("Adding directory {0} to RPM spec dir list".format(dirname))
+                    filelist.append('%dir "{0}"'.format(dirname))
             for file in files:
-                filelist.append('"{0}"'.format(os.path.join(root, file).replace(program_files, "").replace("%","[%]")))
+                filename = os.path.join(root, file).replace(program_files, "").replace("%","[%]")
+                logger.debug("Adding file {0} to RPM spec file list".format(filename))
+                filelist.append('"{0}"'.format(filename))
 
         # Collect the install scripts
         try:
