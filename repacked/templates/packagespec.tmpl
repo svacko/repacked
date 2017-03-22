@@ -4,18 +4,20 @@ release: 1
 maintainer: First Name <first.name@example.com>
 summary: ${project_name} example spec
 description: ${project_name} description
-    
+
 packagetree: BUILD/
 
-scripts: 
+scripts:
     postinst: SCRIPTS/postinst
     prerm: SCRIPTS/prerm
-  
+
 packages:
   - package: rpm
     architecture: noarch
     requires:
-    exclude_list:
+    directory_exclude_list:
+      - /srv
+      - /usr
       - /usr/bin
   - package: debian
     architecture: all

@@ -43,6 +43,10 @@ Package specifications are written in YAML. You can actually name the file whate
     - package: rpm
       architecture: 64-bit
       requires: glibc, compat-libstdc++-296 = 2.96-144
+      directory_exclude_list:
+        - /srv
+        - /usr
+        - /usr/bin
 
    pkgbuild:
       preserve-symlinks: true

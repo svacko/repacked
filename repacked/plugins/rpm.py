@@ -96,17 +96,17 @@ class RPMPackager(IPlugin):
 
         # Collect file exclude list
         try:
-            exclude_filelist = package['exclude_list']
+            dirlist_exclude = package['directory_exclude_list']
         except:
             # Empy file exclude list
-            exclude_filelist = []
+            dirlist_exclude = []
 
         # Create file list
         filelist = []
         for root, subfolders, files in os.walk(program_files):
             for folder in subfolders:
                 dirname = os.path.join(root, folder).replace(program_files, "").replace("%","[%]")
-                if dirname in exclude_filelist:
+                if dirname in dirlist_exclude:
                     logger.debug("Excluding directory {0} from RPM spec dir list".format(dirname))
                     continue
                 else:
