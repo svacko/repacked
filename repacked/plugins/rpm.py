@@ -94,11 +94,22 @@ class RPMPackager(IPlugin):
 
         cf_template = Template(filename=os.path.join(tmpl_dir, "rpmspec.tmpl"))
 
+        # Collect file exclude list
+        try:
+            exclude_filelist = package['exclude_list']
+        except:
+            # Empy file exclude list
+            exclude_filelist = []
+
         # Create file list
         filelist = []
         for root, subfolders, files in os.walk(program_files):
             for folder in subfolders:
-                filelist.append('%dir "{0}"'.format(os.path.join(root, folder).replace(program_files, "").replace("%","[%]")))
+                if folder in exclude_filelist:
+                    continue
+                else:
+                    filename = os.path.join(root, folder).replace(program_files, "").replace("%", "[%]")
+                    filelist.append('%dir "{0}"'.format(os.path.join(root, folder).replace(program_files, "").replace("%","[%]")))
             for file in files:
                 filelist.append('"{0}"'.format(os.path.join(root, file).replace(program_files, "").replace("%","[%]")))
 
@@ -180,4 +191,3 @@ class RPMPackager(IPlugin):
             buildroot=directory,
             specfile=os.path.abspath(os.path.join(self.tmpdir, "rpm.spec")),
             rpm_ops=rpm_ops))
-
