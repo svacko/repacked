@@ -9,10 +9,10 @@ from yapsy.PluginManager import PluginManager
 from mako.template import Template
 from mako import exceptions
 
-__author__ = "Jonathan Prior, enhanced by Adam Hamsik, Stanislav Bocinec"
+__author__ = "Jonathan Prior, enhanced by Adam Hamsik, Stanislav Bocinec, Michal Linhard"
 __copyright__ = "Copyright 2011, 736 Computing Services Limited"
 __license__ = "LGPL"
-__version__ = "138"
+__version__ = "139"
 __maintainer__ = "Stanislav Bocinec"
 __email__ = "stanislav.bocinec@innovatrics.com"
 
@@ -48,6 +48,7 @@ class Configuration:
         self.config_version_db_path="/var/tmp/dbversion.db"
         self.config_version_db=None
         self.pkg_format="all"
+        self.profile=None
 
 plugin_dir = os.path.expanduser("~/.repacked/plugins")
 
@@ -153,9 +154,11 @@ def build_packages(spec, config):
             logger.error("Module {0} isn't installed. Ignoring this package and continuing.".format(package['package']))
             exit
         # We want to build a package if there is no version defined or if version matches
-        if package.get('pkg-version', None) is None or re.match(str(package.get('pkg-version','')), config.version) is not None:
-            logger.info("package version:"+format(package.get('pkg-version'))+", config version: "+str(config.version)+", release version: "+str(config.release))
-            run_package_build(spec, config, package, builder, tempdirs)
+        packageProfile = package.get('profile', None)
+        if config.profile is None or packageProfile is None or packageProfile == config.profile:
+            if package.get('pkg-version', None) is None or re.match(str(package.get('pkg-version','')), config.version) is not None:
+                logger.info("package version:"+format(package.get('pkg-version'))+", config version: "+str(config.version)+", release version: "+str(config.release))
+                run_package_build(spec, config, package, builder, tempdirs)
 
     return tempdirs
 
@@ -175,7 +178,7 @@ def assign_value(first, default=None):
 #
 # Merge configuration options for package build from arguments and from package config
 #
-def extract_config(spec, config, outputdir, symlinks, permission, pkgformat):
+def extract_config(spec, config, outputdir, symlinks, permission, pkgformat, profile):
     """
     Merge configuration options and specfile option together to pass them arround
     """
@@ -227,6 +230,7 @@ def extract_config(spec, config, outputdir, symlinks, permission, pkgformat):
         logger.error("pkg-format not supported. Supported values: debian/rpm/all")
         sys.exit(1)
     config.pkg_format = pkgformat
+    config.profile = profile
 
 def initialize_project(project_name):
     """
@@ -262,6 +266,7 @@ def main():
     parser.add_option('--outputdir', '-o', default='.', help="packages will be placed in the specified directory")
     parser.add_option('--no-clean', '-C', action="store_true", help="Don't remove temporary files used to build packages")
     parser.add_option('--pkg-format', '-f', default="all", help="Specify package format (all/debian/rpm), default setting is to create all")
+    parser.add_option('--profile', '-F', default=None, help="Specify profiles to build, only packages in given profile will be created, includes all by default")
     parser.add_option('--init', '-i', dest='project_name', default=False, help="Initialize empty project in new directory")
     parser.add_option('--preserve', '-p', default=False, action="store_true", help="Preserve Symlinks, default setting is to follow them.")
     parser.add_option('--permission', '-P', default=True, action="store_false", help="Disable preservation of  File Permissions, default setting is to preserve them.")
@@ -283,7 +288,7 @@ def main():
         sys.exit(1)
     
     config=Configuration()
-    extract_config(spec, config, options.outputdir, options.preserve, options.permission, options.pkg_format)
+    extract_config(spec, config, options.outputdir, options.preserve, options.permission, options.pkg_format, options.profile)
 
     try:
         config.config_version_db = shelve.open(config.config_version_db_path)
