@@ -154,8 +154,8 @@ def build_packages(spec, config):
             logger.error("Module {0} isn't installed. Ignoring this package and continuing.".format(package['package']))
             exit
         # We want to build a package if there is no version defined or if version matches
-        packageProfile = package.get('profile', None)
-        if config.profile is None or packageProfile is None or packageProfile == config.profile:
+        pkg_profile = package.get('profile', None)
+        if config.profile is None or pkg_profile is None or pkg_profile == config.profile:
             if package.get('pkg-version', None) is None or re.match(str(package.get('pkg-version','')), config.version) is not None:
                 logger.info("package version:"+format(package.get('pkg-version'))+", config version: "+str(config.version)+", release version: "+str(config.release))
                 run_package_build(spec, config, package, builder, tempdirs)
