@@ -51,9 +51,10 @@ class DebianPackager(IPlugin):
 
         spec = self.spec
 
-        filename = "{name}_{version}_{architecture}.deb".format(
+        filename = "{name}_{version}-{release}_{architecture}.deb".format(
             name=spec['name'],
             version=config.version,
+            release=config.release,
             architecture=self.checkarch(package['architecture']),
         )
 
@@ -95,9 +96,14 @@ class DebianPackager(IPlugin):
 
         cf_template = Template(filename=os.path.join(tmpl_dir, "debcontrol.tmpl"))
 
+        cf_version = config.version
+        cf_release = str(config.release).replace('-','.');
+        cf_provides = package.get('provides')
+        cf_provides = "" if cf_provides == None else ", " + cf_provides
+
         cf_final = cf_template.render(
             package_name=spec['name'],
-            version=config.version,
+            version="{0}-{1}".format(cf_version, cf_release),
             architecture=self.checkarch(package['architecture']),
             maintainer=spec['maintainer'],
             size=os.path.getsize(tmpdir),
@@ -106,7 +112,7 @@ class DebianPackager(IPlugin):
             dependencies=self.get_deps(package, config),
             predepends=package.get('predepends'),
             replaces=package.get('replaces'),
-            provides=package.get('provides'),
+            provides="{0}-{1}{2}".format(spec['name'], cf_version, cf_provides),
             conflicts=package.get('conflicts'),
         )
 
