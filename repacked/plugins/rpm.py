@@ -119,10 +119,13 @@ class RPMPackager(IPlugin):
 
         # Collect the install scripts
         try:
-            scripts = spec['scripts']
+            scripts = package['scripts']
         except:
-            # No installation scripts
-            scripts = None
+            try:
+                scripts = spec['scripts']
+            except:
+                # No installation scripts
+                scripts = None
 
         scriptdata = {}
 

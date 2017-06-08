@@ -145,12 +145,15 @@ class DebianPackager(IPlugin):
                 lf.close()
 
         ## Copy over installation scripts
-
         try:
-            scripts = spec['scripts']
+            scripts = package['scripts']
         except:
-            # No installation scripts
-            scripts = None
+            try:
+                scripts = spec['scripts']
+            except:
+                # No installation scripts
+                scripts = None
+
 
         if scripts:
             for app in list(scripts.items()):
