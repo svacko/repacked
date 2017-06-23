@@ -12,7 +12,7 @@ from mako import exceptions
 __author__ = "Jonathan Prior, enhanced by Adam Hamsik, Stanislav Bocinec, Michal Linhard"
 __copyright__ = "Copyright 2011, 736 Computing Services Limited"
 __license__ = "LGPL"
-__version__ = "139"
+__version__ = "140"
 __maintainer__ = "Stanislav Bocinec"
 __email__ = "stanislav.bocinec@innovatrics.com"
 
